@@ -1,0 +1,10 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "BaseKernel Build",
+            "type": "shell",
+            "command": "cd ${workspaceFolder} && make && qemu-system-i386 -cdrom basekernel.iso"
+        }
+    ]
+}

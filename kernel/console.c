@@ -31,7 +31,7 @@ struct console * console_create_root()
 	console_root.window = window_create_root();
 	console_root.gx = window_graphics(console_root.window);
 	console_reset(&console_root);
-	console_putstring(&console_root,"\nconsole: initialized\n");
+	//console_putstring(&console_root,"\nconsole: initialized\n");
 	return &console_root;
 }
 

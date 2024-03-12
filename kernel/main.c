@@ -39,30 +39,30 @@ int kernel_main()
 	struct console *console = console_create_root();
 	console_addref(console);
 
-	printf("video: %d x %d (addr %x)\n", video_xres, video_yres, video_buffer);
-	printf("kernel: %d bytes\n", kernel_size);
+	// printf("video: %d x %d (addr %x)\n", video_xres, video_yres, video_buffer);
+	// printf("kernel: %d bytes\n", kernel_size);
 
 	page_init();
 	kmalloc_init((char *) KMALLOC_START, KMALLOC_LENGTH);
-	interrupt_init();
-	mouse_init();
 	keyboard_init();
 	rtc_init();
 	clock_init();
-	process_init();
-	ata_init();
-	cdrom_init();
-	diskfs_init();
+	//interrupt_init();
+	//mouse_init();
+	//process_init();
+	//ata_init();
+	//cdrom_init();
+	//diskfs_init();
 
-	current->ktable[KNO_STDIN]   = kobject_create_console(console);
-	current->ktable[KNO_STDOUT]  = kobject_copy(current->ktable[0]);
-	current->ktable[KNO_STDERR]  = kobject_copy(current->ktable[1]);
-	current->ktable[KNO_STDWIN]  = kobject_create_window(&window_root);
-	current->ktable[KNO_STDDIR]  = 0; // No current dir until something is mounted.
+	// current->ktable[KNO_STDIN]   = kobject_create_console(console);
+	// current->ktable[KNO_STDOUT]  = kobject_copy(current->ktable[0]);
+	// current->ktable[KNO_STDERR]  = kobject_copy(current->ktable[1]);
+	// current->ktable[KNO_STDWIN]  = kobject_create_window(&window_root);
+	// current->ktable[KNO_STDDIR]  = 0; // No current dir until something is mounted.
 
 	
 	printf("\n");
-	kshell_launch();
+	//kshell_launch();
 
 	while(1) {
 		console_putchar(console,console_getchar(console));

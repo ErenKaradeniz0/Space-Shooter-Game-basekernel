@@ -30,7 +30,7 @@ void page_init()
 
 	pages_total = (total_memory * 1024 * 1024 - MAIN_MEMORY_START) / PAGE_SIZE;
 	pages_free = pages_total;
-	printf("memory: %d MB (%d KB) total\n", (pages_free * PAGE_SIZE) / MEGA, (pages_free * PAGE_SIZE) / KILO);
+	//printf("memory: %d MB (%d KB) total\n", (pages_free * PAGE_SIZE) / MEGA, (pages_free * PAGE_SIZE) / KILO);
 
 	freemap = main_memory_start;
 	freemap_bits = pages_total;
@@ -38,7 +38,7 @@ void page_init()
 	freemap_cells = 1 + freemap_bits / CELL_BITS;
 	freemap_pages = 1 + freemap_bytes / PAGE_SIZE;
 
-	printf("memory: %d bits %d bytes %d cells %d pages\n", freemap_bits, freemap_bytes, freemap_cells, freemap_pages);
+	//printf("memory: %d bits %d bytes %d cells %d pages\n", freemap_bits, freemap_bytes, freemap_cells, freemap_pages);
 
 	memset(freemap, 0xff, freemap_bytes);
 	for(i = 0; i < freemap_pages; i++)
@@ -50,7 +50,7 @@ void page_init()
 
 	freemap[0] = 0x0;
 
-	printf("memory: %d MB (%d KB) available\n", (pages_free * PAGE_SIZE) / MEGA, (pages_free * PAGE_SIZE) / KILO);
+	//printf("memory: %d MB (%d KB) available\n", (pages_free * PAGE_SIZE) / MEGA, (pages_free * PAGE_SIZE) / KILO);
 }
 
 void page_stats( uint32_t *nfree, uint32_t *ntotal )
