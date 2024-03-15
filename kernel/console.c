@@ -73,60 +73,48 @@ int console_post( struct console *c, const char *data, int size )
 
 	return total;
 }
-
-int console_write( struct console *d, const char *data, int size )
+int X_SIZE_CONSOLE, Y_SIZE_CONSOLE;
+int console_write(struct console *d, const char *data, int size)
 {
-	graphics_char(d->gx, d->xpos * 8, d->ypos * 8, ' ');
+	console_size(d, &X_SIZE_CONSOLE, &Y_SIZE_CONSOLE);
+    graphics_char(d->gx, d->xpos * 8, d->ypos * 8, ' ');
 
-	int i;
-	for(i = 0; i < size; i++) {
-		char c = data[i];
-		switch (c) {
-		case 13:
-		case 10:
-			d->xpos = 0;
-			d->ypos++;
-			break;
-		case '\f':
-			d->xpos = d->ypos = 0;
-			d->xsize = graphics_width(d->gx) / 8;
-			d->ysize = graphics_height(d->gx) / 8;
-			graphics_fgcolor(d->gx, fgcolor);
-			graphics_bgcolor(d->gx, bgcolor);
-			graphics_clear(d->gx, 0, 0, graphics_width(d->gx), graphics_height(d->gx));
-			break;
-		case '\b':
-			d->xpos--;
-			break;
-		default:
-			graphics_char(d->gx, d->xpos * 8, d->ypos * 8, c);
-			d->xpos++;
-			break;
-		}
+    int i;
+    for (i = 0; i < size; i++) {
+        char c = data[i];
+        switch (c) {
+            case 13:
+            case 10:
+                d->xpos = 0;
+                if (d->ypos + 1 < Y_SIZE_CONSOLE) { // Check if moving down is within bounds
+                    d->ypos++;
+                }
+                break;
+            case '\f':
+                d->xpos = d->ypos = 0;
+                d->xsize = graphics_width(d->gx) / 8;
+                d->ysize = graphics_height(d->gx) / 8;
+                graphics_fgcolor(d->gx, fgcolor);
+                graphics_bgcolor(d->gx, bgcolor);
+                graphics_clear(d->gx, 0, 0, graphics_width(d->gx), graphics_height(d->gx));
+                break;
+            case '\b':
+                if (d->xpos > 0) { // Check if moving left is within bounds
+                    d->xpos--;
+                }
+                break;
+            default:
+                if (d->xpos < X_SIZE_CONSOLE) { // Check if moving right is within bounds
+                    graphics_char(d->gx, d->xpos * 8, d->ypos * 8, c);
+                    d->xpos++;
+                }
+                break;
+        }
+    }
 
-		if(d->xpos < 0) {
-			d->xpos = d->xsize - 1;
-			d->ypos--;
-		}
-
-		if(d->xpos >= d->xsize) {
-			d->xpos = 0;
-			d->ypos++;
-		}
-
-		if(d->ypos >= d->ysize) {
-			d->xpos = d->ypos = 0;
-			d->xsize = graphics_width(d->gx) / 8;
-			d->ysize = graphics_height(d->gx) / 8;
-			graphics_fgcolor(d->gx, fgcolor);
-			graphics_bgcolor(d->gx, bgcolor);
-			graphics_clear(d->gx, 0, 0, graphics_width(d->gx), graphics_height(d->gx));
-		}
-
-	}
-	graphics_char(d->gx, d->xpos * 8, d->ypos * 8, '_');
-	return i;
+    return i;
 }
+
 
 int console_read( struct console *c, char *data, int length )
 {
@@ -215,3 +203,17 @@ void console_size( struct console *c, int *xsize, int *ysize )
 	*ysize = c->ysize;
 }
 
+
+void console_set_cursor(struct console *c, int x, int y) {
+    c->xpos = x;
+    c->ypos = y;
+}
+
+void console_puts(struct console *c, const char *str) {
+    console_write(c, str, strlen(str));
+}
+
+void kprint_at(struct console *console, int x, int y, const char *str) {
+    console_set_cursor(console, x, y); // Set cursor position
+    console_puts(console, str); // Print the string at the specified position
+}

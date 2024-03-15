@@ -1,9 +1,3 @@
-/*
-Copyright (C) 2015-2019 The University of Notre Dame
-This software is distributed under the GNU General Public License.
-See the file LICENSE for details.
-*/
-
 #include "console.h"
 #include "page.h"
 #include "process.h"
@@ -27,46 +21,46 @@ See the file LICENSE for details.
 #include "diskfs.h"
 #include "serial.h"
 
-/*
-This is the C initialization point of the kernel.
-By the time we reach this point, we are in protected mode,
-with interrupts disabled, a valid C stack, but no malloc heap.
-Now we initialize each subsystem in the proper order:
-*/
+#define SIDE_BAR_WIDTH 20
 
-int kernel_main()
-{
-	struct console *console = console_create_root();
-	console_addref(console);
+struct console *console;
+int X_SIZE, Y_SIZE;
 
-	// printf("video: %d x %d (addr %x)\n", video_xres, video_yres, video_buffer);
-	// printf("kernel: %d bytes\n", kernel_size);
+void drawBoundaries(struct console *console) {
+    // Draw vertical boundaries
+    for (int i = 0; i < Y_SIZE; i++) {
+        kprint_at(console, 0, i, "#");                       // Left boundary
+        kprint_at(console, SIDE_BAR_WIDTH, i, "#");          // Right boundary
+        kprint_at(console, X_SIZE - 1, i, "#");              // Right-most boundary
+    }
 
-	page_init();
-	kmalloc_init((char *) KMALLOC_START, KMALLOC_LENGTH);
-	keyboard_init();
-	rtc_init();
-	clock_init();
-	//interrupt_init();
-	//mouse_init();
-	//process_init();
-	//ata_init();
-	//cdrom_init();
-	//diskfs_init();
+    // Draw horizontal boundaries
+    for (int i = 0; i < X_SIZE; i++) {
+        kprint_at(console, i, 0, "#");                       // Top boundary
+        kprint_at(console, i, Y_SIZE - 1, "#");              // Bottom boundary
+    }
+}
 
-	// current->ktable[KNO_STDIN]   = kobject_create_console(console);
-	// current->ktable[KNO_STDOUT]  = kobject_copy(current->ktable[0]);
-	// current->ktable[KNO_STDERR]  = kobject_copy(current->ktable[1]);
-	// current->ktable[KNO_STDWIN]  = kobject_create_window(&window_root);
-	// current->ktable[KNO_STDDIR]  = 0; // No current dir until something is mounted.
 
+int kernel_main() {
 	
-	printf("\n");
-	//kshell_launch();
+    console = console_create_root();
+    console_addref(console);
+	console_size(console, &X_SIZE, &Y_SIZE);
+    page_init();
+    kmalloc_init((char *) KMALLOC_START, KMALLOC_LENGTH);
+    
+	drawBoundaries(console);
 
-	while(1) {
-		console_putchar(console,console_getchar(console));
-	}
+	//keyboard_init();
+    //rtc_init();
+    //clock_init();
+    //interrupt_init();
+    //mouse_init();
+    //process_init();
+    //ata_init();
+    //cdrom_init();
+    //diskfs_init();
 
-	return 0;
+    return 0;
 }

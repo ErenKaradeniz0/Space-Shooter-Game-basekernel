@@ -43,4 +43,8 @@ void console_putstring( struct console *c, const char *str );
 void console_heartbeat( struct console *c );
 void console_size( struct console *c, int *xsize, int *ysize );
 
+// Declaration of missing functions
+void console_set_cursor(struct console *c, int x, int y);
+void console_puts(struct console *c, const char *str);
+void kprint_at(struct console *console, int x, int y, const char *str);
 #endif
