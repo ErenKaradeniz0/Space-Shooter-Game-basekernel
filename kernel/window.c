@@ -87,7 +87,7 @@ int window_post_events( struct window *w, struct event *e, int size )
 
 int  window_read_events( struct window *w, struct event *e, int size )
 {
-	return event_queue_read(w->queue,e,size);
+	return event_queue_read_nonblock(w->queue,e,size);
 }
 
 int  window_read_events_nonblock( struct window *w, struct event *e, int size )

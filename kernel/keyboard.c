@@ -1,9 +1,3 @@
-/*
-Copyright (C) 2015-2019 The University of Notre Dame
-This software is distributed under the GNU General Public License.
-See the file LICENSE for details.
-*/
-
 #include "console.h"
 #include "ioports.h"
 #include "interrupt.h"
@@ -140,6 +134,15 @@ void keyboard_init()
 	printf("keyboard: ready\n");
 }
 
+char get_keyboard_input() {
+    static char last_key = KEY_INVALID; // Keep track of the last key pressed
 
-
-
+    // Check if there's a new key pressed
+    if (last_key != KEY_INVALID) {
+        char key = last_key; // Save the last key pressed
+        last_key = KEY_INVALID; // Reset last_key
+        return key; // Return the key pressed
+    }
+    // No new key pressed, return a default value
+    return '\0';
+}

@@ -9,6 +9,7 @@ See the file LICENSE for details.
 #include "graphics.h"
 #include "kmalloc.h"
 #include "string.h"
+#include "main.h"
 
 struct console {
 	struct window *window;
@@ -209,11 +210,7 @@ void console_set_cursor(struct console *c, int x, int y) {
     c->ypos = y;
 }
 
-void console_puts(struct console *c, const char *str) {
-    console_write(c, str, strlen(str));
-}
-
 void kprint_at(struct console *console, int x, int y, const char *str) {
     console_set_cursor(console, x, y); // Set cursor position
-    console_puts(console, str); // Print the string at the specified position
+    console_putstring(console, str); // Print the string at the specified position
 }
