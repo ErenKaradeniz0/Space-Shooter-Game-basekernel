@@ -34,6 +34,7 @@ void graphics_scrollup(struct graphics *g, int x, int y, int w, int h, int dy);
 void graphics_rect(struct graphics *g, int x, int y, int w, int h);
 void graphics_clear(struct graphics *g, int x, int y, int w, int h);
 void graphics_line(struct graphics *g, int x, int y, int w, int h);
+void graphics_circle(struct graphics *g, int cx, int cy, int radius);
 void graphics_char(struct graphics *g, int x, int y, unsigned char c);
 void graphics_string(struct graphics *g, int x, int y, const char *str, int length );
 int graphics_write(struct graphics *g, int *cmd, int length );

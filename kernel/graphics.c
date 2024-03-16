@@ -366,6 +366,33 @@ void graphics_line(struct graphics *g, int x, int y, int w, int h)
 	}
 }
 
+void graphics_circle(struct graphics *g, int cx, int cy, int radius) {
+    int x = radius;
+    int y = 0;
+    int err = 0;
+
+    while (x >= y) {
+        // Plot the points by symmetry
+        plot_pixel(g->bitmap, cx + x, cy + y, g->fgcolor);
+        plot_pixel(g->bitmap, cx - x, cy + y, g->fgcolor);
+        plot_pixel(g->bitmap, cx + x, cy - y, g->fgcolor);
+        plot_pixel(g->bitmap, cx - x, cy - y, g->fgcolor);
+        plot_pixel(g->bitmap, cx + y, cy + x, g->fgcolor);
+        plot_pixel(g->bitmap, cx - y, cy + x, g->fgcolor);
+        plot_pixel(g->bitmap, cx + y, cy - x, g->fgcolor);
+        plot_pixel(g->bitmap, cx - y, cy - x, g->fgcolor);
+
+        if (err <= 0) {
+            y += 1;
+            err += 2 * y + 1;
+        }
+        if (err > 0) {
+            x -= 1;
+            err -= 2 * x + 1;
+        }
+    }
+}
+
 void graphics_bitmap(struct graphics *g, int x, int y, int width, int height, uint8_t * data)
 {
 	int i, j, b;
