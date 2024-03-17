@@ -428,6 +428,14 @@ void graphics_char(struct graphics *g, int x, int y, unsigned char c)
 	return graphics_bitmap(g, x, y, FONT_WIDTH, FONT_HEIGHT, &fontdata[u]);
 }
 
+void graphics_write_string(struct graphics *g, int x, int y, const char *str) {
+    int i = 0;
+    while (str[i] != '\0') {
+        graphics_char(g, x + i * FONT_WIDTH, y, str[i]);
+        i++;
+    }
+}
+
 void graphics_scrollup(struct graphics *g, int x, int y, int w, int h, int dy)
 {
 	int j;
