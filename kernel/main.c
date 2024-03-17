@@ -365,18 +365,20 @@ void busy_wait(unsigned int milliseconds)
 
 int kernel_main()
 {
+
+    struct graphics *g = graphics_create_root();
+
+	console_init(g);
+	console_addref(&console_root);
+
     page_init();
     kmalloc_init((char *)KMALLOC_START, KMALLOC_LENGTH);
     interrupt_init();
+    rtc_init();
     keyboard_init();
     process_init();
 
-    struct console *console;
-    console = console_create_root();
-    console_addref(console);
-
-    struct graphics *root_graphics = graphics_create_root();
-    struct graphics *g = graphics_create(root_graphics);
+    
     init(g);
 
     // Game loop
@@ -384,21 +386,20 @@ int kernel_main()
     {
         while (quit_flag == 0 && continueGame())
         {
-            if (flag)
-            {
-                current_key = console_getchar(console);
-                // Convert the character to a string
-                char key_string[2];
-                key_string[0] = current_key;
-                key_string[1] = '\0'; // Null-terminate the string
-                kprint_at(console, 10, 20, key_string);
+
+                current_key = keyboard_read(0);
+                // // Convert the character to a string
+                // char key_string[2];
+                // key_string[0] = current_key;
+                // key_string[1] = '\0'; // Null-terminate the string
+                // kprint_at(g, 10, 20, key_string);
                 
                 handleUserInput(current_key, bullets);
                 if (current_key == 'q')
                 {
                     break;
                 }
-            }
+
             drawSpaceship(g,x, y,3,3);
             //move_bullets();
             //move_rockets();
@@ -416,6 +417,6 @@ int kernel_main()
             //restartGame(); // Restart the game
         }
     }
-    graphics_delete(g);
+    //graphics_delete(g);
     return 0;
 }

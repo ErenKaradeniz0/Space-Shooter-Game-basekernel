@@ -47,4 +47,5 @@ void console_size( struct console *c, int *xsize, int *ysize );
 void console_set_cursor(struct console *c, int x, int y);
 void console_puts(struct console *c, const char *str);
 void kprint_at(struct console *console, int x, int y, const char *str);
+struct console * console_init(struct graphics *g);
 #endif

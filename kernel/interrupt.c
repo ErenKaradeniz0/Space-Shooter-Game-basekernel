@@ -123,7 +123,7 @@ void interrupt_init()
 
 	interrupt_unblock();
 
-	printf("interrupt: ready\n");
+	//printf("interrupt: ready\n");
 }
 
 void interrupt_handler(int i, int code)

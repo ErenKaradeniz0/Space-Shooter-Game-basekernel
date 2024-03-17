@@ -22,7 +22,6 @@ struct console {
 	int refcount;
 };
 
-struct console console_root = {0};
 
 static struct graphics_color bgcolor = { 0, 0, 0 };
 static struct graphics_color fgcolor = { 255, 255, 255 };
@@ -213,4 +212,13 @@ void console_set_cursor(struct console *c, int x, int y) {
 void kprint_at(struct console *console, int x, int y, const char *str) {
     console_set_cursor(console, x, y); // Set cursor position
     console_putstring(console, str); // Print the string at the specified position
+}
+
+struct console console_root = {0};
+struct console * console_init(struct graphics *g)
+{
+	console_root.gx = g;
+	console_reset(&console_root);
+	//console_putstring(&console_root,"\nconsole: initialized\n");
+	return &console_root;
 }

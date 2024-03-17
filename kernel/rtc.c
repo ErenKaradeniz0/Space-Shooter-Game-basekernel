@@ -161,7 +161,7 @@ void rtc_init()
 	rtc_read(&t);
 	boottime = rtc_time_to_timestamp(&t);
 
-	printf("rtc: ready\n");
+	//printf("rtc: ready\n");
 }
 
 void rtc_read(struct rtc_time *tout)
