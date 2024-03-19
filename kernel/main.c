@@ -24,7 +24,7 @@
 #define MAX_X 1024
 #define MAX_Y 768
 #define SIDE_BAR_WIDTH 192 // 24 * 8
-#define ROCKET_WIDTH 4
+#define ROCKET_WIDTH 32 // 4 * 8
 #define ROCKET_HEIGHT 3
 
 #define SPACE_SHIP_HEIGHT 64 // 8 * 8
@@ -34,11 +34,11 @@
 #define MAX_BULLETS 30
 
 #define ROCKET_SPEED 8
-#define MAX_ROCKETS 1
+#define MAX_ROCKETS 5
 #define ROCKET_MOVE_DELAY 14
 #define BULLET_MOVE_DELAY 2
 
-#define RAND_MAX 80
+#define RAND_MAX 728
 typedef struct
 {
     int x;
@@ -94,8 +94,8 @@ void bullet_counter()
 void clearSpaceship(struct graphics *g, int x, int y, int w, int h)
 {
     // Calculate bottom-right corner coordinates
-    int x2 = x + 94;
-    int y2 = y + 64; // Maximum y-coordinate for the spaceship
+    int x2 = x + 96;
+    int y2 = y + 56; // Maximum y-coordinate for the spaceship
 
     // Clear the rectangle covering the spaceship
     graphics_clear(g, x - 10, y, x2 - x, y2 - y);
@@ -257,8 +257,8 @@ int rand(void)
 
 int randRocketAxis()
 {
-    int min_x = SIDE_BAR_WIDTH + 1;       // 21
-    int max_x = MAX_Y - ROCKET_WIDTH - 1; // 73
+    int min_x = SIDE_BAR_WIDTH + 8;
+    int max_x = MAX_Y - ROCKET_WIDTH - 8;
     int x = rand();
     while (min_x > x || x > max_x)
     {
@@ -277,8 +277,8 @@ void initRockets()
         do
         {
             // Generate random position for the new rocket
-            newRocketX = 80 + SIDE_BAR_WIDTH; // Adjust range to prevent overflow randRocketAxis();
-            newRocketY = 64;                  // Adjust range as needed
+            newRocketX = randRocketAxis(); // Adjust range to prevent overflow randRocketAxis();
+            newRocketY = 64;                // Adjust range as needed 64
 
             // Check for collision with existing rockets based on X position only
             collisionDetected = 0;
@@ -336,6 +336,14 @@ void intro(struct graphics *g)
 
 void init(struct graphics *g)
 {
+
+    page_init();
+    kmalloc_init((char *)KMALLOC_START, KMALLOC_LENGTH);
+    interrupt_init();
+    rtc_init();
+    keyboard_init();
+    process_init();
+
     initBullets();
     initRockets();
     intro(g);
@@ -537,16 +545,9 @@ int kernel_main()
 {
 
     struct graphics *g = graphics_create_root();
-
     console_init(g);
     console_addref(&console_root);
 
-    page_init();
-    kmalloc_init((char *)KMALLOC_START, KMALLOC_LENGTH);
-    interrupt_init();
-    rtc_init();
-    keyboard_init();
-    process_init();
 
     init(g);
 
