@@ -30,7 +30,7 @@ int Y_SIZE = 760;
 #define SPACE_SHIP_HEIGHT 8
 #define SPACE_SHIP_WIDTH 6
 
-#define BULLET_SPEED 1
+#define BULLET_SPEED 8
 #define MAX_BULLETS 30
 
 #define ROCKET_SPEED 1
@@ -71,6 +71,26 @@ int score = 0;
 char score_str[3];   // maximum number of digits is 3
 char bullets_str[2]; // maximum number of digits is 2
 
+void shot_bullet(Bullet *bullet)
+{
+    bullet->active = 1;
+    bullet->avaible = 0;
+    bullet->x = x + 32; // Adjust bullet position to appear from spaceship's center
+    bullet->y = y - 16;
+}
+
+void bullet_counter()
+{
+    bullet_count = 0;
+    for (int i = 0; i < MAX_BULLETS; i++)
+    {
+        if (bullets[i].avaible)
+        {
+            bullet_count += 1;
+        }
+    }
+}
+
 void handleUserInput(struct graphics *g, char current_key, Bullet bullets[MAX_BULLETS])
 {
     if (!pause_flag)
@@ -96,8 +116,8 @@ void handleUserInput(struct graphics *g, char current_key, Bullet bullets[MAX_BU
             {
                 if (!bullets[i].active && bullets[i].avaible)
                 {
-                    // shot_bullet(&bullets[i]);
-                    // bullet_counter();
+                    shot_bullet(&bullets[i]);
+                    bullet_counter();
                     // printBulletCount(11, 17);
                     break;
                 }
@@ -371,6 +391,43 @@ void busy_wait(unsigned int milliseconds)
     }
 }
 
+void move_bullets(struct graphics *g)
+{
+
+    // Move all active bullets
+    for (int index = 0; index < MAX_BULLETS; index++)
+    {
+        if (!pause_flag)
+        {
+            if (bullets[index].active && !bullets[index].avaible)
+            {
+                graphics_char(g,bullets[index].x, bullets[index].y, '^');
+                moveBullet(g,index);
+            }
+        }
+    }
+    // Increment the bullet move counter
+    bulletMoveCounter++;
+    // Reset the counter to prevent overflow
+    if (bulletMoveCounter >= BULLET_MOVE_DELAY)
+        bulletMoveCounter = 0;
+}
+
+void moveBullet(struct graphics *g,int index)
+{
+    if (bulletMoveCounter % BULLET_MOVE_DELAY == 0)
+    {
+        graphics_char(g,bullets[index].x, bullets[index].y, ' '); // Clear previous bullet position
+        bullets[index].y -= BULLET_SPEED;                   // Move the bullet upwards
+        if (bullets[index].y > 0)
+        {
+             graphics_char(g,bullets[index].x, bullets[index].y, '^'); // Draw the bullet
+        }
+        else
+            bullets[index].active = 0;
+    }
+}
+
 int kernel_main()
 {
 
@@ -403,7 +460,7 @@ int kernel_main()
             }
             drawSpaceship(g, x, y, 3, 3);
 
-            // move_bullets();
+            move_bullets(g);
             // move_rockets();
             //  Check for collision between bullets and rockets
             // collisionBullet();
