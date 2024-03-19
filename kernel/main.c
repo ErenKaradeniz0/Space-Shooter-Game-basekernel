@@ -21,19 +21,19 @@
 #include "diskfs.h"
 #include "serial.h"
 
-int X_SIZE = 1016;
-int Y_SIZE = 760;
-#define SIDE_BAR_WIDTH 192
+#define MAX_X 1024
+#define MAX_Y 768
+#define SIDE_BAR_WIDTH 192 // 24 * 8
 #define ROCKET_WIDTH 4
 #define ROCKET_HEIGHT 3
 
-#define SPACE_SHIP_HEIGHT 8
-#define SPACE_SHIP_WIDTH 6
+#define SPACE_SHIP_HEIGHT 64 // 8 * 8
+#define SPACE_SHIP_WIDTH 48  // 6 * 8
 
 #define BULLET_SPEED 8
 #define MAX_BULLETS 30
 
-#define ROCKET_SPEED 1
+#define ROCKET_SPEED 8
 #define MAX_ROCKETS 1
 #define ROCKET_MOVE_DELAY 14
 #define BULLET_MOVE_DELAY 2
@@ -91,7 +91,6 @@ void bullet_counter()
     }
 }
 
-
 void clearSpaceship(struct graphics *g, int x, int y, int w, int h)
 {
     // Calculate bottom-right corner coordinates
@@ -116,7 +115,7 @@ void handleUserInput(struct graphics *g, char current_key, Bullet bullets[MAX_BU
             }
             break;
         case 'd':
-            if (x + 20 < X_SIZE - 64)
+            if (x + 20 < MAX_X - 64)
             {
                 clearSpaceship(g, x, y, 3, 3);
                 x += 4;
@@ -179,10 +178,6 @@ void draw_a(struct graphics *g, int x, int y, int w, int h)
 
 void drawSpaceship(struct graphics *g, int x, int y, int w, int h)
 {
-    // graphics_rect(g,x-10,y,96,64);
-    // graphics_line(g,x-16,y-8,91,0);
-    // graphics_line(g,x+88,y-8,0,62);
-    // graphics_line(g,x-16,y-8,0,62);
     //  Draw A
     draw_a(g, x, y, w, h);
     draw_a(g, x + 70, y, w, h);
@@ -212,24 +207,22 @@ void drawSpaceship(struct graphics *g, int x, int y, int w, int h)
     graphics_line(g, x + 60, y + 45, w + 12, h + 12);
 }
 
-
-
 void drawBoundaries(struct graphics *g)
 {
 
     // Draw vertical boundaries
-    for (int i = 0; i <= Y_SIZE; i += 8)
+    for (int i = 0; i < MAX_Y; i += 8)
     {
-        graphics_char(g, 0, i, '#');
+        graphics_char(g, 0, i, '#');              // Left Boundary
         graphics_char(g, SIDE_BAR_WIDTH, i, '#'); // Right boundary
-        graphics_char(g, X_SIZE, i, '#');         // Right-most boundary
+        graphics_char(g, MAX_X - 8, i, '#');      // Right-most boundary
     }
 
     // Draw horizontal boundaries
-    for (int i = 0; i <= X_SIZE; i += 8)
+    for (int i = 0; i < MAX_X; i += 8)
     {
-        graphics_char(g, i, 0, '#');      // Top boundary
-        graphics_char(g, i, Y_SIZE, '#'); // Bottom boundary
+        graphics_char(g, i, 0, '#');         // Top boundary
+        graphics_char(g, i, MAX_Y - 8, '#'); // Bottom boundary
     }
 }
 
@@ -264,8 +257,8 @@ int rand(void)
 
 int randRocketAxis()
 {
-    int min_x = SIDE_BAR_WIDTH + 1;        // 21
-    int max_x = Y_SIZE - ROCKET_WIDTH - 1; // 73
+    int min_x = SIDE_BAR_WIDTH + 1;       // 21
+    int max_x = MAX_Y - ROCKET_WIDTH - 1; // 73
     int x = rand();
     while (min_x > x || x > max_x)
     {
@@ -285,7 +278,7 @@ void initRockets()
         {
             // Generate random position for the new rocket
             newRocketX = 80 + SIDE_BAR_WIDTH; // Adjust range to prevent overflow randRocketAxis();
-            newRocketY = 64;                // Adjust range as needed
+            newRocketY = 64;                  // Adjust range as needed
 
             // Check for collision with existing rockets based on X position only
             collisionDetected = 0;
@@ -348,8 +341,8 @@ void init(struct graphics *g)
     intro(g);
     drawBoundaries(g);
 
-    x = (X_SIZE - SPACE_SHIP_WIDTH * 8 + SIDE_BAR_WIDTH) / 2; // Starting position for spaceship
-    y = Y_SIZE - (SPACE_SHIP_HEIGHT * 8);                     // Adjusted starting position for the spaceship
+    x = (MAX_X - SPACE_SHIP_WIDTH + SIDE_BAR_WIDTH) / 2; // base x of spaceship 49th pixel
+    y = MAX_Y - SPACE_SHIP_HEIGHT;                   // base y of spaceship 87th pixel
 }
 
 int continueGame()
@@ -359,7 +352,7 @@ int continueGame()
     int rocketReachedBottom = 0;
     for (int i = 0; i < MAX_ROCKETS; i++)
     {
-        if (rockets[i].y >= X_SIZE)
+        if (rockets[i].y >= MAX_X)
         {
             rocketReachedBottom = 1;
             if (rocketReachedBottom)
@@ -431,36 +424,36 @@ void move_bullets(struct graphics *g)
         bulletMoveCounter = 0;
 }
 
-
 void drawRocket(struct graphics *g, int x, int y)
 {
+    //x = y * 8;
+    //y = y * 8;
 
     // \||/
-    graphics_line(g, x, y-40,20,20);
-    graphics_line(g, x+15, y-20,0,-20);
-    graphics_line(g, x+25, y-20,0,-20);
-    graphics_line(g, x + 20, y - 40,20,-20);
+    graphics_line(g, x, y - 20, 20, 20);
+    graphics_line(g, x + 35, y, 0, -20);
+    graphics_line(g, x + 45, y, 0, -20);
+    graphics_line(g, x + 60, y, 20, -20);
     //|oo|
-    graphics_line(g, x, y,0,-20);
-    graphics_circle(g,x+15,y-10,4);   
-    graphics_circle(g,x+25,y-10,4);    
-    graphics_line(g, x+40, y,0,-20);
+    graphics_line(g, x + 20, y + 20, 0, -20);
+    graphics_circle(g, x + 35, y + 10, 4);
+    graphics_circle(g, x + 45, y + 10, 4);
+    graphics_line(g, x + 60, y + 20, 0, -20);
 
     // Draw '\'
-    graphics_line(g, x, y,20,20);
+    graphics_line(g, x + 20, y + 20, 20, 20);
     // Draw /
-    graphics_line(g, x + 20, y + 20,20,-20);
-    // kprint_at(x, y, "\\||/");
-    // kprint_at(x, y + 1, "|oo|");
-    // kprint_at(x, y + 2, " \\/");
+    graphics_line(g, x + 60, y + 20, -20, 20);
 }
-
 
 void clearRocket(struct graphics *g, int x, int y)
 {
-    // kprint_at(x, y, "    ");
-    // kprint_at(x, y + 1, "    ");
-    // kprint_at(x, y + 2, "   ");
+    // Calculate bottom-right corner coordinates
+    int x2 = x + 100;
+    int y2 = y + 63; // Maximum y-coordinate for the spaceship
+
+    // Clear the rectangle covering the spaceship
+    graphics_clear(g, x - 20, y - 20, x2 - x, y2 - y);
 }
 void moveRocket(struct graphics *g, int index)
 {
@@ -523,7 +516,7 @@ void move_rockets(struct graphics *g)
         {
             if (rockets[i].active)
             {
-                drawRocket(g,rockets[i].x, rockets[i].y);
+                drawRocket(g, rockets[i].x, rockets[i].y);
                 moveRocket(g, i);
             }
         }
@@ -539,10 +532,6 @@ void move_rockets(struct graphics *g)
         generate_rockets();
     }
 }
-
-
-
-
 
 int kernel_main()
 {
