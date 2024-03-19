@@ -24,7 +24,7 @@
 #define MAX_X 1024
 #define MAX_Y 768
 #define SIDE_BAR_WIDTH 192 // 24 * 8
-#define ROCKET_WIDTH 32 // 4 * 8
+#define ROCKET_WIDTH 72    // 6 * 8
 #define ROCKET_HEIGHT 3
 
 #define SPACE_SHIP_HEIGHT 64 // 8 * 8
@@ -34,11 +34,11 @@
 #define MAX_BULLETS 30
 
 #define ROCKET_SPEED 8
-#define MAX_ROCKETS 5
+#define MAX_ROCKETS 8
 #define ROCKET_MOVE_DELAY 14
 #define BULLET_MOVE_DELAY 2
 
-#define RAND_MAX 728
+#define RAND_MAX 118 // 944 / 8
 typedef struct
 {
     int x;
@@ -101,6 +101,11 @@ void clearSpaceship(struct graphics *g, int x, int y, int w, int h)
     graphics_clear(g, x - 10, y, x2 - x, y2 - y);
 }
 
+void restartGame(struct graphics *g)
+{
+    init(g); // Initialize the game
+}
+
 void handleUserInput(struct graphics *g, char current_key, Bullet bullets[MAX_BULLETS])
 {
     if (!pause_flag)
@@ -143,7 +148,7 @@ void handleUserInput(struct graphics *g, char current_key, Bullet bullets[MAX_BU
             score = 0;
             quit_flag = 0;
             bullet_count = MAX_BULLETS;
-            // restartGame(); // Restart the game
+            restartGame(g); // Restart the game
             break;
         case 'p':
             pause_flag = !pause_flag; // Toggle pause_flag
@@ -257,8 +262,8 @@ int rand(void)
 
 int randRocketAxis()
 {
-    int min_x = SIDE_BAR_WIDTH + 8;
-    int max_x = MAX_Y - ROCKET_WIDTH - 8;
+    int min_x = SIDE_BAR_WIDTH / 8 + 1;
+    int max_x = MAX_X / 8 - ROCKET_WIDTH / 8;
     int x = rand();
     while (min_x > x || x > max_x)
     {
@@ -277,8 +282,8 @@ void initRockets()
         do
         {
             // Generate random position for the new rocket
-            newRocketX = randRocketAxis(); // Adjust range to prevent overflow randRocketAxis();
-            newRocketY = 64;                // Adjust range as needed 64
+            newRocketX = 8 * randRocketAxis(); // Adjust range to prevent overflow randRocketAxis();
+            newRocketY = 64;                   // Adjust range as needed 64
 
             // Check for collision with existing rockets based on X position only
             collisionDetected = 0;
@@ -350,7 +355,7 @@ void init(struct graphics *g)
     drawBoundaries(g);
 
     x = (MAX_X - SPACE_SHIP_WIDTH + SIDE_BAR_WIDTH) / 2; // base x of spaceship 49th pixel
-    y = MAX_Y - SPACE_SHIP_HEIGHT;                   // base y of spaceship 87th pixel
+    y = MAX_Y - SPACE_SHIP_HEIGHT;                       // base y of spaceship 87th pixel
 }
 
 int continueGame()
@@ -434,8 +439,6 @@ void move_bullets(struct graphics *g)
 
 void drawRocket(struct graphics *g, int x, int y)
 {
-    //x = y * 8;
-    //y = y * 8;
 
     // \||/
     graphics_line(g, x, y - 20, 20, 20);
@@ -457,11 +460,11 @@ void drawRocket(struct graphics *g, int x, int y)
 void clearRocket(struct graphics *g, int x, int y)
 {
     // Calculate bottom-right corner coordinates
-    int x2 = x + 100;
-    int y2 = y + 63; // Maximum y-coordinate for the spaceship
+    int x2 = x + 80;
+    int y2 = y + 64; // Maximum y-coordinate for the spaceship
 
     // Clear the rectangle covering the spaceship
-    graphics_clear(g, x - 20, y - 20, x2 - x, y2 - y);
+    graphics_clear(g, x, y - 20, x2 - x, y2 - y);
 }
 void moveRocket(struct graphics *g, int index)
 {
@@ -490,7 +493,7 @@ void generateRocket(Rocket *rocket)
         for (int j = 0; j < MAX_ROCKETS; j++)
         {
             if (rockets[j].active &&
-                (newRocketX >= rockets[j].x - ROCKET_WIDTH && newRocketX <= rockets[j].x + ROCKET_WIDTH)) // Check only X position
+                (newRocketX >= rockets[j].x - 20 - ROCKET_WIDTH && newRocketX <= rockets[j].x + ROCKET_WIDTH)) // Check only X position
             {
                 collisionDetected = 1;
                 break;
@@ -548,7 +551,6 @@ int kernel_main()
     console_init(g);
     console_addref(&console_root);
 
-
     init(g);
 
     // Game loop
@@ -579,7 +581,7 @@ int kernel_main()
         {
             quit_flag = 0;
             bullet_count = MAX_BULLETS;
-            // restartGame(); // Restart the game
+            restartGame(g); // Restart the game
         }
     }
     // graphics_delete(g);
