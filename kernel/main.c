@@ -24,8 +24,8 @@
 #define MAX_X 1024
 #define MAX_Y 768
 #define SIDE_BAR_WIDTH 192 // 24 * 8
-#define ROCKET_WIDTH 72    // 6 * 8
-#define ROCKET_HEIGHT 3
+#define ROCKET_WIDTH 32    // 6 * 8
+#define ROCKET_HEIGHT 40
 
 #define SPACE_SHIP_HEIGHT 64 // 8 * 8
 #define SPACE_SHIP_WIDTH 80  // 6 * 8
@@ -34,11 +34,11 @@
 #define MAX_BULLETS 30
 
 #define ROCKET_SPEED 8
-#define MAX_ROCKETS 8
+#define MAX_ROCKETS 6
 #define ROCKET_MOVE_DELAY 14
 #define BULLET_MOVE_DELAY 2
 
-#define RAND_MAX 118 // 944 / 8
+#define RAND_MAX 104 // 944 / 8
 typedef struct
 {
     int x;
@@ -78,18 +78,6 @@ void shot_bullet(Bullet *bullet)
     bullet->y = ship_y - 16;
 }
 
-void bullet_counter()
-{
-    bullet_count = 0;
-    for (int i = 0; i < MAX_BULLETS; i++)
-    {
-        if (bullets[i].avaible)
-        {
-            bullet_count += 1;
-        }
-    }
-}
-
 void clearSpaceship(struct graphics *g, int x, int y, int w, int h)
 {
     // Calculate bottom-right corner coordinates
@@ -105,12 +93,10 @@ void restartGame(struct graphics *g)
     init(g); // Initialize the game
 }
 
-
 void clear_screen(struct graphics *g)
 {
-    graphics_clear(g,0,0,MAX_X,MAX_Y);
+    graphics_clear(g, 0, 0, MAX_X, MAX_Y);
 }
-
 
 void quitGame(struct graphics *g)
 {
@@ -147,7 +133,7 @@ void handleUserInput(struct graphics *g, char current_key, Bullet bullets[MAX_BU
                 {
                     shot_bullet(&bullets[i]);
                     bullet_counter();
-                    // printBulletCount(11, 17);
+                    printBulletCount(g, 88, 136);
                     break;
                 }
             }
@@ -155,8 +141,8 @@ void handleUserInput(struct graphics *g, char current_key, Bullet bullets[MAX_BU
         case 'q':
             score = 0;
             quitGame(g);
-            bullet_count = MAX_BULLETS;
             quit_flag = 1;
+            graphics_delete(g);
             break;
         case 'r':
             score = 0;
@@ -168,7 +154,6 @@ void handleUserInput(struct graphics *g, char current_key, Bullet bullets[MAX_BU
             pause_flag = !pause_flag; // Toggle pause_flag
             if (pause_flag)
             {
-                // kprint_at(35, 10, "Paused, Press p to continue");
                 graphics_write_string(g, MAX_X / 2, MAX_Y / 2, "Paused, Press p to continue");
             }
             break;
@@ -277,12 +262,12 @@ int randRocketAxis()
 {
     int min_x = SIDE_BAR_WIDTH / 8 + 1;
     int max_x = MAX_X / 8 - ROCKET_WIDTH / 8;
-    int x = rand();
+    int x = rand(); // 1 - 88
     while (min_x > x || x > max_x)
     {
         x = rand();
     }
-    return x;
+    return x + 15;
 }
 
 void initRockets()
@@ -295,8 +280,8 @@ void initRockets()
         do
         {
             // Generate random position for the new rocket
-            newRocketX = 8 * randRocketAxis(); // Adjust range to prevent overflow randRocketAxis();
-            newRocketY = 64;                   // Adjust range as needed 64
+            newRocketX = 8 * randRocketAxis();
+            newRocketY = 48;
 
             // Check for collision with existing rockets based on X position only
             collisionDetected = 0;
@@ -337,29 +322,97 @@ void info(struct graphics *g)
     graphics_write_string(g, 16, 120, "25 Score");
 }
 
+// Function to convert an integer to its string representation
+int int_to_string(int num, char *buffer)
+{
+    int i = 0;
+    int digits = 0; // Variable to store the number of digits
+
+    if (num == 0)
+    {
+        buffer[i++] = '0';
+        digits = 1; // If the number is zero, it has one digit
+    }
+    else
+    {
+        // Calculate the number of digits
+        int temp = num;
+        while (temp != 0)
+        {
+            digits++;
+            temp /= 10;
+        }
+
+        // Convert each digit to character and store in the buffer
+        while (num != 0)
+        {
+            int digit = num % 10;
+            buffer[i++] = '0' + digit;
+            num /= 10;
+        }
+    }
+    buffer[i] = '\0';
+
+    // Reverse the string
+    int start = 0;
+    int end = i - 1;
+    while (start < end)
+    {
+        char temp = buffer[start];
+        buffer[start] = buffer[end];
+        buffer[end] = temp;
+        start++;
+        end--;
+    }
+
+    return digits; // Return the number of digits
+}
+
+void printScore(struct graphics *g, int x, int y)
+{
+    int num_digits = int_to_string(score, score_str);
+    graphics_write_string(g, x, y, score_str);
+}
+
+void bullet_counter()
+{
+    bullet_count = 0;
+    for (int i = 0; i < MAX_BULLETS; i++)
+    {
+        if (bullets[i].avaible)
+        {
+            bullet_count += 1;
+        }
+    }
+}
+
+void printBulletCount(struct graphics *g, int x, int y)
+{
+
+    int num_digits = int_to_string(bullet_count, bullets_str);
+    graphics_write_string(g, x, y, bullets_str);
+    // kprint_at(x, y, bullets_str);
+    if (bullet_count < 10)
+        graphics_write_string(g, x + 8, y, " ");
+}
+
 void intro(struct graphics *g)
 {
     drawBoundaries(g);
 
     info(g);
 
-    // kprint_at(2, 17, "Bullets:");
-    // printBulletCount(11, 17);
+    graphics_write_string(g, 16, 136, "Bullets:");
+    printBulletCount(g, 88, 136);
 
-    // kprint_at(2, 18, "Score:");
-    // printScore(10, 18);
+    graphics_write_string(g, 16, 144, "Score:");
+    printScore(g, 80, 144);
 }
 
 void init(struct graphics *g)
 {
 
-    page_init();
-    kmalloc_init((char *)KMALLOC_START, KMALLOC_LENGTH);
-    interrupt_init();
-    rtc_init();
-    keyboard_init();
-    process_init();
-
+    clear_screen(g);
     initBullets();
     initRockets();
     intro(g);
@@ -369,20 +422,30 @@ void init(struct graphics *g)
     ship_y = MAX_Y - SPACE_SHIP_HEIGHT;                           // base y of spaceship 87th pixel
 }
 
-int continueGame()
+void winGame(struct graphics *g)
+{
+    clear_screen(g);
+    drawBoundaries(g);
+    info(g);
+    graphics_write_string(g, MAX_X / 2, MAX_Y / 2, "You Win!");
+    graphics_write_string(g, MAX_X / 2, MAX_Y / 2 + 8, "Press R for Play Again");
+}
+
+int continueGame(struct graphics *g)
 {
     // Check if all rockets have reached the bottom of the screen
 
     int rocketReachedBottom = 0;
     for (int i = 0; i < MAX_ROCKETS; i++)
     {
-        if (rockets[i].y >= MAX_X)
+        if (rockets[i].y + ROCKET_HEIGHT >= MAX_Y)
         {
             rocketReachedBottom = 1;
             if (rocketReachedBottom)
             {
                 quit_flag = 1;
-                // gameOver();
+                graphics_write_string(g, MAX_X / 2, MAX_Y / 2, "Rockets Reached Bottom.");
+                gameOver(g);
                 return 0;
             }
         }
@@ -391,7 +454,7 @@ int continueGame()
     if (score == 25)
     {
         quit_flag = 1;
-        // winGame();
+        winGame(g);
         score = 0;
         return 0;
     }
@@ -452,30 +515,32 @@ void drawRocket(struct graphics *g, int x, int y)
 {
 
     // \||/
-    graphics_line(g, x, y - 20, 20, 20);
-    graphics_line(g, x + 35, y, 0, -20);
-    graphics_line(g, x + 45, y, 0, -20);
-    graphics_line(g, x + 60, y, 20, -20);
-    //|oo|
-    graphics_line(g, x + 20, y + 20, 0, -20);
-    graphics_circle(g, x + 35, y + 10, 4);
-    graphics_circle(g, x + 45, y + 10, 4);
-    graphics_line(g, x + 60, y + 20, 0, -20);
+    graphics_line(g, x, y - 10 - 8, 10, 10);
+    graphics_line(g, x + 10, y - 8, 0, -20);
+    graphics_line(g, x + 20, y - 8, 0, -20);
+    graphics_line(g, x + 20, y - 8, 10, -10);
+
+    //___
+    graphics_line(g, x, y, 30, 0);
+    //|o|
+    graphics_line(g, x, y + 25, 0, -45);
+    graphics_circle(g, x + 15, y + 10, 4);
+    graphics_line(g, x + 30, y + 25, 0, -45);
 
     // Draw '\'
-    graphics_line(g, x + 20, y + 20, 20, 20);
+    graphics_line(g, x, y + 15, 15, 15);
     // Draw /
-    graphics_line(g, x + 60, y + 20, -20, 20);
+    graphics_line(g, x + 30, y + 15, -15, 15);
 }
 
 void clearRocket(struct graphics *g, int x, int y)
 {
     // Calculate bottom-right corner coordinates
-    int x2 = x + 80;
-    int y2 = y + 64; // Maximum y-coordinate for the spaceship
+    int x2 = x + ROCKET_WIDTH;
+    int y2 = y + 80; // Maximum y-coordinate for the spaceship
 
     // Clear the rectangle covering the spaceship
-    graphics_clear(g, x, y - 20, x2 - x, y2 - y);
+    graphics_clear(g, x, y - 40, x2 - x, y2 - y);
 }
 void moveRocket(struct graphics *g, int index)
 {
@@ -496,8 +561,8 @@ void generateRocket(Rocket *rocket)
     do
     {
         // Generate random position for the new rocket
-        newRocketX = randRocketAxis(); // Adjust range to prevent overflow
-        newRocketY = 1;                // Adjust range as needed
+        newRocketX = 8 * randRocketAxis(); // Adjust range to prevent overflow
+        newRocketY = 48;                   // Adjust range as needed
 
         // Check for collision with existing rockets based on X position only
         collisionDetected = 0;
@@ -555,8 +620,67 @@ void move_rockets(struct graphics *g)
     }
 }
 
+int collisionBullet(struct graphics *g)
+{
+    for (int i = 0; i < MAX_BULLETS; i++)
+    {
+        if (bullets[i].active)
+        {
+            for (int j = 0; j < MAX_ROCKETS; j++)
+            {
+                if (rockets[j].active &&
+                    bullets[i].x >= rockets[j].x - 8 && bullets[i].x < rockets[j].x + ROCKET_WIDTH &&
+                    bullets[i].y >= rockets[j].y && bullets[i].y < rockets[j].y + ROCKET_HEIGHT)
+                {
+                    score += 1;
+
+                    printScore(g, 80, 144);
+                    bullets[i].active = 0; // Deactivate bullet
+                    rockets[j].active = 0; // Deactivate rocket
+                    graphics_write_string(g, bullets[i].x, bullets[i].y, " ");
+                    clearRocket(g, rockets[j].x, rockets[j].y);
+                    break;
+                }
+            }
+        }
+    }
+}
+
+void gameOver(struct graphics *g)
+{
+    clear_screen(g);
+    drawBoundaries(g);
+    info(g);
+    graphics_write_string(g, MAX_X / 2, MAX_Y / 2 + 8, "You lost, Press R for Play Again");
+    graphics_write_string(g, MAX_X / 2, MAX_Y / 2 + 16, "Score: ");
+    graphics_write_string(g, MAX_X / 2 + 64, MAX_Y / 2 + 16, score_str);
+}
+
+// Function to check for collision between rocket and spaceship
+void collisionSpaceShip(struct graphics *g)
+{
+    for (int i = 0; i < MAX_ROCKETS; i++)
+    {
+        // Check if any of the edges of the rocket box lie outside the spaceship box
+
+        if (ship_x <= rockets[i].x + ROCKET_WIDTH - 1 && ship_x + SPACE_SHIP_WIDTH - 1 >= rockets[i].x && rockets[i].y + ROCKET_HEIGHT - 1 >= ship_y)
+        {
+            quit_flag = 1;
+            gameOver(g);
+            graphics_write_string(g, MAX_X / 2, MAX_Y / 2, "Spaceship destroyed by rocket");
+        }
+    }
+}
+
 int kernel_main()
 {
+
+    page_init();
+    kmalloc_init((char *)KMALLOC_START, KMALLOC_LENGTH);
+    interrupt_init();
+    rtc_init();
+    keyboard_init();
+    process_init();
 
     struct graphics *g = graphics_create_root();
     console_init(g);
@@ -567,7 +691,7 @@ int kernel_main()
     // Game loop
     while (1)
     {
-        while (quit_flag == 0 && continueGame())
+        while (quit_flag == 0 && continueGame(g))
         {
 
             current_key = keyboard_read(1); // non blocking
@@ -575,7 +699,7 @@ int kernel_main()
             handleUserInput(g, current_key, bullets);
             if (current_key == 'q')
             {
-                graphics_delete(g);
+
                 break;
             }
             drawSpaceship(g, ship_x, ship_y, 4, 4);
@@ -583,10 +707,10 @@ int kernel_main()
             move_bullets(g);
             move_rockets(g);
             //  Check for collision between bullets and rockets
-            // collisionBullet();
-            // collisionSpaceShip();
+            collisionBullet(g);
+            collisionSpaceShip(g);
 
-            busy_wait(1000); // Wait for 50 milliseconds using busy wait
+            busy_wait(300); // Wait for 50 milliseconds using busy wait
         }
         current_key = keyboard_read(1); // non blocking
         if (current_key == 'r')
@@ -596,6 +720,5 @@ int kernel_main()
             restartGame(g); // Restart the game
         }
     }
-    // graphics_delete(g);
     return 0;
 }
