@@ -8,6 +8,6 @@ See the file LICENSE for details.
 #define KEYBOARD_H
 
 void keyboard_init();
-char get_keyboard_input();
+char keyboard_read(int non_blocking);
 
 #endif

@@ -34,7 +34,7 @@ int Y_SIZE = 760;
 #define MAX_BULLETS 30
 
 #define ROCKET_SPEED 1
-#define MAX_ROCKETS 4
+#define MAX_ROCKETS 1
 #define ROCKET_MOVE_DELAY 14
 #define BULLET_MOVE_DELAY 2
 
@@ -91,6 +91,17 @@ void bullet_counter()
     }
 }
 
+
+void clearSpaceship(struct graphics *g, int x, int y, int w, int h)
+{
+    // Calculate bottom-right corner coordinates
+    int x2 = x + 94;
+    int y2 = y + 64; // Maximum y-coordinate for the spaceship
+
+    // Clear the rectangle covering the spaceship
+    graphics_clear(g, x - 10, y, x2 - x, y2 - y);
+}
+
 void handleUserInput(struct graphics *g, char current_key, Bullet bullets[MAX_BULLETS])
 {
     if (!pause_flag)
@@ -101,14 +112,14 @@ void handleUserInput(struct graphics *g, char current_key, Bullet bullets[MAX_BU
             if (x - 1 > SIDE_BAR_WIDTH + 20)
             {
                 clearSpaceship(g, x, y, 3, 3);
-                x-=4;
+                x -= 4;
             }
             break;
         case 'd':
             if (x + 20 < X_SIZE - 64)
             {
                 clearSpaceship(g, x, y, 3, 3);
-                 x+=4;
+                x += 4;
             }
             break;
         case ' ':
@@ -168,11 +179,11 @@ void draw_a(struct graphics *g, int x, int y, int w, int h)
 
 void drawSpaceship(struct graphics *g, int x, int y, int w, int h)
 {
-    //graphics_rect(g,x-10,y,96,64);
-    //graphics_line(g,x-16,y-8,91,0);
-    //graphics_line(g,x+88,y-8,0,62);
-    //graphics_line(g,x-16,y-8,0,62);
-    // Draw A
+    // graphics_rect(g,x-10,y,96,64);
+    // graphics_line(g,x-16,y-8,91,0);
+    // graphics_line(g,x+88,y-8,0,62);
+    // graphics_line(g,x-16,y-8,0,62);
+    //  Draw A
     draw_a(g, x, y, w, h);
     draw_a(g, x + 70, y, w, h);
     draw_a(g, x, y + 20, w, h);
@@ -201,15 +212,7 @@ void drawSpaceship(struct graphics *g, int x, int y, int w, int h)
     graphics_line(g, x + 60, y + 45, w + 12, h + 12);
 }
 
-void clearSpaceship(struct graphics *g, int x, int y, int w, int h)
-{
-    // Calculate bottom-right corner coordinates
-    int x2 = x + 94;
-    int y2 = y + 64; // Maximum y-coordinate for the spaceship
 
-    // Clear the rectangle covering the spaceship
-    graphics_clear(g, x-10, y, x2 - x, y2 - y);
-}
 
 void drawBoundaries(struct graphics *g)
 {
@@ -281,8 +284,8 @@ void initRockets()
         do
         {
             // Generate random position for the new rocket
-            newRocketX = randRocketAxis(); // Adjust range to prevent overflow
-            newRocketY = 1;                // Adjust range as needed
+            newRocketX = 80 + SIDE_BAR_WIDTH; // Adjust range to prevent overflow randRocketAxis();
+            newRocketY = 64;                // Adjust range as needed
 
             // Check for collision with existing rockets based on X position only
             collisionDetected = 0;
@@ -341,12 +344,12 @@ void intro(struct graphics *g)
 void init(struct graphics *g)
 {
     initBullets();
-    // initRockets();
+    initRockets();
     intro(g);
     drawBoundaries(g);
 
     x = (X_SIZE - SPACE_SHIP_WIDTH * 8 + SIDE_BAR_WIDTH) / 2; // Starting position for spaceship
-    y = Y_SIZE - (SPACE_SHIP_HEIGHT * 8);                 // Adjusted starting position for the spaceship
+    y = Y_SIZE - (SPACE_SHIP_HEIGHT * 8);                     // Adjusted starting position for the spaceship
 }
 
 int continueGame()
@@ -391,6 +394,21 @@ void busy_wait(unsigned int milliseconds)
     }
 }
 
+void moveBullet(struct graphics *g, int index)
+{
+    if (bulletMoveCounter % BULLET_MOVE_DELAY == 0)
+    {
+        graphics_char(g, bullets[index].x, bullets[index].y, ' '); // Clear previous bullet position
+        bullets[index].y -= BULLET_SPEED;                          // Move the bullet upwards
+        if (bullets[index].y > 0)
+        {
+            graphics_char(g, bullets[index].x, bullets[index].y, '^'); // Draw the bullet
+        }
+        else
+            bullets[index].active = 0;
+    }
+}
+
 void move_bullets(struct graphics *g)
 {
 
@@ -401,8 +419,8 @@ void move_bullets(struct graphics *g)
         {
             if (bullets[index].active && !bullets[index].avaible)
             {
-                graphics_char(g,bullets[index].x, bullets[index].y, '^');
-                moveBullet(g,index);
+                graphics_char(g, bullets[index].x, bullets[index].y, '^');
+                moveBullet(g, index);
             }
         }
     }
@@ -413,20 +431,118 @@ void move_bullets(struct graphics *g)
         bulletMoveCounter = 0;
 }
 
-void moveBullet(struct graphics *g,int index)
+
+void drawRocket(struct graphics *g, int x, int y)
 {
-    if (bulletMoveCounter % BULLET_MOVE_DELAY == 0)
-    {
-        graphics_char(g,bullets[index].x, bullets[index].y, ' '); // Clear previous bullet position
-        bullets[index].y -= BULLET_SPEED;                   // Move the bullet upwards
-        if (bullets[index].y > 0)
-        {
-             graphics_char(g,bullets[index].x, bullets[index].y, '^'); // Draw the bullet
-        }
-        else
-            bullets[index].active = 0;
+
+    // \||/
+    graphics_line(g, x, y-40,20,20);
+    graphics_line(g, x+15, y-20,0,-20);
+    graphics_line(g, x+25, y-20,0,-20);
+    graphics_line(g, x + 20, y - 40,20,-20);
+    //|oo|
+    graphics_line(g, x, y,0,-20);
+    graphics_circle(g,x+15,y-10,4);   
+    graphics_circle(g,x+25,y-10,4);    
+    graphics_line(g, x+40, y,0,-20);
+
+    // Draw '\'
+    graphics_line(g, x, y,20,20);
+    // Draw /
+    graphics_line(g, x + 20, y + 20,20,-20);
+    // kprint_at(x, y, "\\||/");
+    // kprint_at(x, y + 1, "|oo|");
+    // kprint_at(x, y + 2, " \\/");
+}
+
+
+void clearRocket(struct graphics *g, int x, int y)
+{
+    // kprint_at(x, y, "    ");
+    // kprint_at(x, y + 1, "    ");
+    // kprint_at(x, y + 2, "   ");
+}
+void moveRocket(struct graphics *g, int index)
+{
+    if (rocketMoveCounter % ROCKET_MOVE_DELAY == 0)
+    {                                                       // Move the rocket every ROCKET_MOVE_DELAY frames
+        clearRocket(g, rockets[index].x, rockets[index].y); // Clear previous rocket position
+        rockets[index].y += ROCKET_SPEED;                   // Move the rocket downwards
+        drawRocket(g, rockets[index].x, rockets[index].y);
     }
 }
+
+// Function to generate a single rocket from passive rocket
+void generateRocket(Rocket *rocket)
+{
+    int newRocketX, newRocketY;
+    int collisionDetected;
+
+    do
+    {
+        // Generate random position for the new rocket
+        newRocketX = randRocketAxis(); // Adjust range to prevent overflow
+        newRocketY = 1;                // Adjust range as needed
+
+        // Check for collision with existing rockets based on X position only
+        collisionDetected = 0;
+        for (int j = 0; j < MAX_ROCKETS; j++)
+        {
+            if (rockets[j].active &&
+                (newRocketX >= rockets[j].x - ROCKET_WIDTH && newRocketX <= rockets[j].x + ROCKET_WIDTH)) // Check only X position
+            {
+                collisionDetected = 1;
+                break;
+            }
+        }
+    } while (collisionDetected);
+
+    // Set the position of the new rocket
+    rocket->x = newRocketX;
+    rocket->y = newRocketY;
+    rocket->active = 1;
+}
+
+void generate_rockets()
+{
+    // Generate new rockets if there are inactive rockets
+    for (int i = 0; i < MAX_ROCKETS; i++)
+    {
+        if (!rockets[i].active)
+        {
+            generateRocket(&rockets[i]);
+        }
+    }
+}
+void move_rockets(struct graphics *g)
+{
+    // Draw and move the rocket
+    for (int i = 0; i < MAX_ROCKETS; i++)
+    {
+        if (!pause_flag)
+        {
+            if (rockets[i].active)
+            {
+                drawRocket(g,rockets[i].x, rockets[i].y);
+                moveRocket(g, i);
+            }
+        }
+    }
+
+    // Increment the rocket move counter
+    rocketMoveCounter++;
+    // Reset the counter to prevent overflow
+    if (rocketMoveCounter >= ROCKET_MOVE_DELAY)
+        rocketMoveCounter = 0;
+    if (current_key != 'p')
+    {
+        generate_rockets();
+    }
+}
+
+
+
+
 
 int kernel_main()
 {
@@ -461,7 +577,7 @@ int kernel_main()
             drawSpaceship(g, x, y, 3, 3);
 
             move_bullets(g);
-            // move_rockets();
+            move_rockets(g);
             //  Check for collision between bullets and rockets
             // collisionBullet();
             // collisionSpaceShip();
