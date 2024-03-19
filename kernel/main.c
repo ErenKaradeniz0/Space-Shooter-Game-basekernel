@@ -28,7 +28,7 @@
 #define ROCKET_HEIGHT 3
 
 #define SPACE_SHIP_HEIGHT 64 // 8 * 8
-#define SPACE_SHIP_WIDTH 48  // 6 * 8
+#define SPACE_SHIP_WIDTH 80  // 6 * 8
 
 #define BULLET_SPEED 8
 #define MAX_BULLETS 30
@@ -61,12 +61,11 @@ int rocketMoveCounter = 0; // Counter to control rocket movement speed
 int bulletMoveCounter = 0; // Counter to control bullet movement speed
 
 int quit_flag = 0;
-int flag = 0; // flag 1 when key pressed
 int pause_flag = 0;
 char current_key = '1';
 int bullet_count = MAX_BULLETS;
-int x;
-int y;
+int ship_x;
+int ship_y;
 int score = 0;
 char score_str[3];   // maximum number of digits is 3
 char bullets_str[2]; // maximum number of digits is 2
@@ -75,8 +74,8 @@ void shot_bullet(Bullet *bullet)
 {
     bullet->active = 1;
     bullet->avaible = 0;
-    bullet->x = x + 32; // Adjust bullet position to appear from spaceship's center
-    bullet->y = y - 16;
+    bullet->x = ship_x + 32; // Adjust bullet position to appear from spaceship's center
+    bullet->y = ship_y - 16;
 }
 
 void bullet_counter()
@@ -106,6 +105,21 @@ void restartGame(struct graphics *g)
     init(g); // Initialize the game
 }
 
+
+void clear_screen(struct graphics *g)
+{
+    graphics_clear(g,0,0,MAX_X,MAX_Y);
+}
+
+
+void quitGame(struct graphics *g)
+{
+    clear_screen(g);
+    drawBoundaries(g);
+    info(g);
+    graphics_write_string(g, MAX_X / 2, MAX_Y / 2, "Press R for Play Again");
+}
+
 void handleUserInput(struct graphics *g, char current_key, Bullet bullets[MAX_BULLETS])
 {
     if (!pause_flag)
@@ -113,17 +127,17 @@ void handleUserInput(struct graphics *g, char current_key, Bullet bullets[MAX_BU
         switch (current_key)
         {
         case 'a':
-            if (x - 1 > SIDE_BAR_WIDTH + 20)
+            if (ship_x - 1 > SIDE_BAR_WIDTH + 20)
             {
-                clearSpaceship(g, x, y, 3, 3);
-                x -= 4;
+                clearSpaceship(g, ship_x, ship_y, 4, 4);
+                ship_x -= 4;
             }
             break;
         case 'd':
-            if (x + 20 < MAX_X - 64)
+            if (ship_x + SPACE_SHIP_WIDTH < MAX_X - 16)
             {
-                clearSpaceship(g, x, y, 3, 3);
-                x += 4;
+                clearSpaceship(g, ship_x, ship_y, 4, 4);
+                ship_x += 4;
             }
             break;
         case ' ':
@@ -140,7 +154,7 @@ void handleUserInput(struct graphics *g, char current_key, Bullet bullets[MAX_BU
             break;
         case 'q':
             score = 0;
-            // quitGame();
+            quitGame(g);
             bullet_count = MAX_BULLETS;
             quit_flag = 1;
             break;
@@ -155,18 +169,17 @@ void handleUserInput(struct graphics *g, char current_key, Bullet bullets[MAX_BU
             if (pause_flag)
             {
                 // kprint_at(35, 10, "Paused, Press p to continue");
+                graphics_write_string(g, MAX_X / 2, MAX_Y / 2, "Paused, Press p to continue");
             }
             break;
         }
-        flag = 0;
     }
     else
     {
         if (current_key == 'p')
         {
             pause_flag = 0;
-            // kprint_at(35, 10, "                                 ");
-            flag = 0;
+            graphics_write_string(g, MAX_X / 2, MAX_Y / 2, "                           ");
         }
     }
 }
@@ -326,8 +339,6 @@ void info(struct graphics *g)
 
 void intro(struct graphics *g)
 {
-    // Clear the screen and draw boundaries
-    // clear_screen();
     drawBoundaries(g);
 
     info(g);
@@ -354,8 +365,8 @@ void init(struct graphics *g)
     intro(g);
     drawBoundaries(g);
 
-    x = (MAX_X - SPACE_SHIP_WIDTH + SIDE_BAR_WIDTH) / 2; // base x of spaceship 49th pixel
-    y = MAX_Y - SPACE_SHIP_HEIGHT;                       // base y of spaceship 87th pixel
+    ship_x = (MAX_X + SIDE_BAR_WIDTH) / 2 - SPACE_SHIP_WIDTH / 4; // base x of spaceship 49th pixel
+    ship_y = MAX_Y - SPACE_SHIP_HEIGHT;                           // base y of spaceship 87th pixel
 }
 
 int continueGame()
@@ -564,9 +575,10 @@ int kernel_main()
             handleUserInput(g, current_key, bullets);
             if (current_key == 'q')
             {
+                graphics_delete(g);
                 break;
             }
-            drawSpaceship(g, x, y, 3, 3);
+            drawSpaceship(g, ship_x, ship_y, 4, 4);
 
             move_bullets(g);
             move_rockets(g);
@@ -576,7 +588,7 @@ int kernel_main()
 
             busy_wait(1000); // Wait for 50 milliseconds using busy wait
         }
-
+        current_key = keyboard_read(1); // non blocking
         if (current_key == 'r')
         {
             quit_flag = 0;
