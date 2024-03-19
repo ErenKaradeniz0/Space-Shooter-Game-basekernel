@@ -71,25 +71,24 @@ int score = 0;
 char score_str[3];   // maximum number of digits is 3
 char bullets_str[2]; // maximum number of digits is 2
 
-
-void handleUserInput(char current_key, Bullet bullets[MAX_BULLETS])
+void handleUserInput(struct graphics *g, char current_key, Bullet bullets[MAX_BULLETS])
 {
     if (!pause_flag)
     {
         switch (current_key)
         {
         case 'a':
-            if (x - 1 > SIDE_BAR_WIDTH)
+            if (x - 1 > SIDE_BAR_WIDTH + 20)
             {
-                //clearSpaceship(x, y);
-                (x)--;
+                clearSpaceship(g, x, y, 3, 3);
+                x-=4;
             }
             break;
         case 'd':
-            if (x + 1 < X_SIZE - 7)
+            if (x + 20 < X_SIZE - 64)
             {
-                //clearSpaceship(x, y);
-                (x)++;
+                clearSpaceship(g, x, y, 3, 3);
+                 x+=4;
             }
             break;
         case ' ':
@@ -97,16 +96,16 @@ void handleUserInput(char current_key, Bullet bullets[MAX_BULLETS])
             {
                 if (!bullets[i].active && bullets[i].avaible)
                 {
-                    //shot_bullet(&bullets[i]);
-                    //bullet_counter();
-                    //printBulletCount(11, 17);
+                    // shot_bullet(&bullets[i]);
+                    // bullet_counter();
+                    // printBulletCount(11, 17);
                     break;
                 }
             }
             break;
         case 'q':
             score = 0;
-            //quitGame();
+            // quitGame();
             bullet_count = MAX_BULLETS;
             quit_flag = 1;
             break;
@@ -114,13 +113,13 @@ void handleUserInput(char current_key, Bullet bullets[MAX_BULLETS])
             score = 0;
             quit_flag = 0;
             bullet_count = MAX_BULLETS;
-            //restartGame(); // Restart the game
+            // restartGame(); // Restart the game
             break;
         case 'p':
             pause_flag = !pause_flag; // Toggle pause_flag
             if (pause_flag)
             {
-                //kprint_at(35, 10, "Paused, Press p to continue");
+                // kprint_at(35, 10, "Paused, Press p to continue");
             }
             break;
         }
@@ -131,12 +130,11 @@ void handleUserInput(char current_key, Bullet bullets[MAX_BULLETS])
         if (current_key == 'p')
         {
             pause_flag = 0;
-            //kprint_at(35, 10, "                                 ");
+            // kprint_at(35, 10, "                                 ");
             flag = 0;
         }
     }
 }
-
 
 // Draw A
 void draw_a(struct graphics *g, int x, int y, int w, int h)
@@ -150,6 +148,10 @@ void draw_a(struct graphics *g, int x, int y, int w, int h)
 
 void drawSpaceship(struct graphics *g, int x, int y, int w, int h)
 {
+    //graphics_rect(g,x-10,y,96,64);
+    //graphics_line(g,x-16,y-8,91,0);
+    //graphics_line(g,x+88,y-8,0,62);
+    //graphics_line(g,x-16,y-8,0,62);
     // Draw A
     draw_a(g, x, y, w, h);
     draw_a(g, x + 70, y, w, h);
@@ -177,6 +179,16 @@ void drawSpaceship(struct graphics *g, int x, int y, int w, int h)
     graphics_circle(g, x + 50, y + 45, w + 2);
     // Draw '\'
     graphics_line(g, x + 60, y + 45, w + 12, h + 12);
+}
+
+void clearSpaceship(struct graphics *g, int x, int y, int w, int h)
+{
+    // Calculate bottom-right corner coordinates
+    int x2 = x + 94;
+    int y2 = y + 64; // Maximum y-coordinate for the spaceship
+
+    // Clear the rectangle covering the spaceship
+    graphics_clear(g, x-10, y, x2 - x, y2 - y);
 }
 
 void drawBoundaries(struct graphics *g)
@@ -227,10 +239,9 @@ int rand(void)
     return (unsigned int)(next / 65536) % RAND_MAX;
 }
 
-
 int randRocketAxis()
 {
-    int min_x = SIDE_BAR_WIDTH + 1;                 // 21
+    int min_x = SIDE_BAR_WIDTH + 1;        // 21
     int max_x = Y_SIZE - ROCKET_WIDTH - 1; // 73
     int x = rand();
     while (min_x > x || x > max_x)
@@ -276,48 +287,46 @@ void initRockets()
 
 void info(struct graphics *g)
 {
-graphics_write_string(g, 16, 8, "Welcome!");
-graphics_write_string(g, 16, 16, "Save the World!");
-graphics_write_string(g, 16, 24, "by Eren Karadeniz");
-graphics_write_string(g, 16, 32, "200101070");
+    graphics_write_string(g, 16, 8, "Welcome!");
+    graphics_write_string(g, 16, 16, "Save the World!");
+    graphics_write_string(g, 16, 24, "by Eren Karadeniz");
+    graphics_write_string(g, 16, 32, "200101070");
 
-graphics_write_string(g, 16, 48, "Keys");
-graphics_write_string(g, 16, 56, "A to move left");
-graphics_write_string(g, 16, 64, "D to move right");
-graphics_write_string(g, 16, 72, "Space to Shot");
-graphics_write_string(g, 16, 80, "Q to quit game");
-graphics_write_string(g, 16, 88, "R to restart game");
-graphics_write_string(g, 16, 96, "P to pause game");
-graphics_write_string(g, 16, 112, "Win after reach");
-graphics_write_string(g, 16, 120, "25 Score");
-
-
+    graphics_write_string(g, 16, 48, "Keys");
+    graphics_write_string(g, 16, 56, "A to move left");
+    graphics_write_string(g, 16, 64, "D to move right");
+    graphics_write_string(g, 16, 72, "Space to Shot");
+    graphics_write_string(g, 16, 80, "Q to quit game");
+    graphics_write_string(g, 16, 88, "R to restart game");
+    graphics_write_string(g, 16, 96, "P to pause game");
+    graphics_write_string(g, 16, 112, "Win after reach");
+    graphics_write_string(g, 16, 120, "25 Score");
 }
 
 void intro(struct graphics *g)
 {
     // Clear the screen and draw boundaries
-    //clear_screen();
+    // clear_screen();
     drawBoundaries(g);
 
     info(g);
 
-    //kprint_at(2, 17, "Bullets:");
-    //printBulletCount(11, 17);
+    // kprint_at(2, 17, "Bullets:");
+    // printBulletCount(11, 17);
 
-    //kprint_at(2, 18, "Score:");
-    //printScore(10, 18);
+    // kprint_at(2, 18, "Score:");
+    // printScore(10, 18);
 }
 
 void init(struct graphics *g)
 {
     initBullets();
-    //initRockets();
+    // initRockets();
     intro(g);
     drawBoundaries(g);
 
     x = (X_SIZE - SPACE_SHIP_WIDTH * 8 + SIDE_BAR_WIDTH) / 2; // Starting position for spaceship
-    y = Y_SIZE - (SPACE_SHIP_HEIGHT * 8) - 1;                             // Adjusted starting position for the spaceship
+    y = Y_SIZE - (SPACE_SHIP_HEIGHT * 8);                 // Adjusted starting position for the spaceship
 }
 
 int continueGame()
@@ -333,7 +342,7 @@ int continueGame()
             if (rocketReachedBottom)
             {
                 quit_flag = 1;
-                //gameOver();
+                // gameOver();
                 return 0;
             }
         }
@@ -342,7 +351,7 @@ int continueGame()
     if (score == 25)
     {
         quit_flag = 1;
-        //winGame();
+        // winGame();
         score = 0;
         return 0;
     }
@@ -362,14 +371,13 @@ void busy_wait(unsigned int milliseconds)
     }
 }
 
-
 int kernel_main()
 {
 
     struct graphics *g = graphics_create_root();
 
-	console_init(g);
-	console_addref(&console_root);
+    console_init(g);
+    console_addref(&console_root);
 
     page_init();
     kmalloc_init((char *)KMALLOC_START, KMALLOC_LENGTH);
@@ -378,7 +386,6 @@ int kernel_main()
     keyboard_init();
     process_init();
 
-    
     init(g);
 
     // Game loop
@@ -387,25 +394,20 @@ int kernel_main()
         while (quit_flag == 0 && continueGame())
         {
 
-                current_key = keyboard_read(0);
-                // // Convert the character to a string
-                // char key_string[2];
-                // key_string[0] = current_key;
-                // key_string[1] = '\0'; // Null-terminate the string
-                // kprint_at(g, 10, 20, key_string);
-                
-                handleUserInput(current_key, bullets);
-                if (current_key == 'q')
-                {
-                    break;
-                }
+            current_key = keyboard_read(1); // non blocking
 
-            drawSpaceship(g,x, y,3,3);
-            //move_bullets();
-            //move_rockets();
-            // Check for collision between bullets and rockets
-            //collisionBullet();
-            //collisionSpaceShip();
+            handleUserInput(g, current_key, bullets);
+            if (current_key == 'q')
+            {
+                break;
+            }
+            drawSpaceship(g, x, y, 3, 3);
+
+            // move_bullets();
+            // move_rockets();
+            //  Check for collision between bullets and rockets
+            // collisionBullet();
+            // collisionSpaceShip();
 
             busy_wait(1000); // Wait for 50 milliseconds using busy wait
         }
@@ -414,9 +416,9 @@ int kernel_main()
         {
             quit_flag = 0;
             bullet_count = MAX_BULLETS;
-            //restartGame(); // Restart the game
+            // restartGame(); // Restart the game
         }
     }
-    //graphics_delete(g);
+    // graphics_delete(g);
     return 0;
 }
