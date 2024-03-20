@@ -24,11 +24,12 @@
 #define MAX_X 1024
 #define MAX_Y 768
 #define SIDE_BAR_WIDTH 192 // 24 * 8
+
 #define ROCKET_WIDTH 32    // 6 * 8
 #define ROCKET_HEIGHT 40
 
-#define SPACE_SHIP_HEIGHT 64 // 8 * 8
 #define SPACE_SHIP_WIDTH 80  // 6 * 8
+#define SPACE_SHIP_HEIGHT 64 // 8 * 8
 
 #define BULLET_SPEED 8
 #define MAX_BULLETS 30
@@ -38,7 +39,7 @@
 #define ROCKET_MOVE_DELAY 14
 #define BULLET_MOVE_DELAY 2
 
-#define RAND_MAX 104 // 944 / 8
+#define RAND_MAX 112 // 944 / 8
 typedef struct
 {
     int x;
@@ -70,144 +71,9 @@ int score = 0;
 char score_str[3];   // maximum number of digits is 3
 char bullets_str[2]; // maximum number of digits is 2
 
-void shot_bullet(Bullet *bullet)
-{
-    bullet->active = 1;
-    bullet->avaible = 0;
-    bullet->x = ship_x + 32; // Adjust bullet position to appear from spaceship's center
-    bullet->y = ship_y - 16;
-}
-
-void clearSpaceship(struct graphics *g, int x, int y, int w, int h)
-{
-    // Calculate bottom-right corner coordinates
-    int x2 = x + 96;
-    int y2 = y + 56; // Maximum y-coordinate for the spaceship
-
-    // Clear the rectangle covering the spaceship
-    graphics_clear(g, x - 10, y, x2 - x, y2 - y);
-}
-
-void restartGame(struct graphics *g)
-{
-    init(g); // Initialize the game
-}
-
 void clear_screen(struct graphics *g)
 {
     graphics_clear(g, 0, 0, MAX_X, MAX_Y);
-}
-
-void quitGame(struct graphics *g)
-{
-    clear_screen(g);
-    drawBoundaries(g);
-    info(g);
-    graphics_write_string(g, MAX_X / 2, MAX_Y / 2, "Press R for Play Again");
-}
-
-void handleUserInput(struct graphics *g, char current_key, Bullet bullets[MAX_BULLETS])
-{
-    if (!pause_flag)
-    {
-        switch (current_key)
-        {
-        case 'a':
-            if (ship_x - 1 > SIDE_BAR_WIDTH + 20)
-            {
-                clearSpaceship(g, ship_x, ship_y, 4, 4);
-                ship_x -= 4;
-            }
-            break;
-        case 'd':
-            if (ship_x + SPACE_SHIP_WIDTH < MAX_X - 16)
-            {
-                clearSpaceship(g, ship_x, ship_y, 4, 4);
-                ship_x += 4;
-            }
-            break;
-        case ' ':
-            for (int i = 0; i < MAX_BULLETS; i++)
-            {
-                if (!bullets[i].active && bullets[i].avaible)
-                {
-                    shot_bullet(&bullets[i]);
-                    bullet_counter();
-                    printBulletCount(g, 88, 136);
-                    break;
-                }
-            }
-            break;
-        case 'q':
-            score = 0;
-            quitGame(g);
-            quit_flag = 1;
-            graphics_delete(g);
-            break;
-        case 'r':
-            score = 0;
-            quit_flag = 0;
-            bullet_count = MAX_BULLETS;
-            restartGame(g); // Restart the game
-            break;
-        case 'p':
-            pause_flag = !pause_flag; // Toggle pause_flag
-            if (pause_flag)
-            {
-                graphics_write_string(g, MAX_X / 2, MAX_Y / 2, "Paused, Press p to continue");
-            }
-            break;
-        }
-    }
-    else
-    {
-        if (current_key == 'p')
-        {
-            pause_flag = 0;
-            graphics_write_string(g, MAX_X / 2, MAX_Y / 2, "                           ");
-        }
-    }
-}
-
-// Draw A
-void draw_a(struct graphics *g, int x, int y, int w, int h)
-{
-    graphics_line(g, x, y, w + 3, h + 3);
-    graphics_line(g, x, y, -w - 3, h + 3);
-    graphics_line(g, x - 10, y + 10, 0, h + 5);
-    graphics_line(g, x + 10, y + 10, 0, h + 5);
-    graphics_line(g, x - 10, y + 15, 20, 0);
-}
-
-void drawSpaceship(struct graphics *g, int x, int y, int w, int h)
-{
-    //  Draw A
-    draw_a(g, x, y, w, h);
-    draw_a(g, x + 70, y, w, h);
-    draw_a(g, x, y + 20, w, h);
-    draw_a(g, x + 70, y + 20, w, h);
-
-    // Draw I
-    graphics_line(g, x + 35, y, 0, h + 6);
-    // Draw -
-    graphics_line(g, x + 35 - w + 2, y, 2 * w - 3, 0);
-    graphics_line(g, x + 35 - w + 2, y + h + 6, 2 * w - 3, 0);
-
-    // Draw /
-    graphics_line(g, x + 30, y + 20, -w - 6, h + 6);
-    // Draw '\'
-    graphics_line(g, x + 40, y + 20, w + 6, h + 6);
-    // Draw -
-    graphics_line(g, x + 30, y + 22, w + 6, 0);
-
-    // Draw /
-    graphics_line(g, x + 10, y + 45, -w - 12, h + 12);
-    // Draw o
-    graphics_circle(g, x + 20, y + 45, w + 2);
-    graphics_circle(g, x + 35, y + 45, w + 2);
-    graphics_circle(g, x + 50, y + 45, w + 2);
-    // Draw '\'
-    graphics_line(g, x + 60, y + 45, w + 12, h + 12);
 }
 
 void drawBoundaries(struct graphics *g)
@@ -227,99 +93,6 @@ void drawBoundaries(struct graphics *g)
         graphics_char(g, i, 0, '#');         // Top boundary
         graphics_char(g, i, MAX_Y - 8, '#'); // Bottom boundary
     }
-}
-
-void initBullets()
-{
-    for (int i = 0; i < MAX_BULLETS; i++)
-    {
-        bullets[i].x = 1;
-        bullets[i].y = 1;
-        bullets[i].active = 0;
-        bullets[i].avaible = 1;
-    }
-}
-
-unsigned int get_system_timer_value()
-{
-    unsigned int val;
-    // Read the value of the system timer (assuming x86 architecture)
-    asm volatile("rdtsc" : "=a"(val));
-    return val;
-}
-
-// Define some global variables for the random number generator
-static unsigned long next;
-// A function to generate a pseudo-random integer
-int rand(void)
-{
-    next = get_system_timer_value();
-    next = next * 1103515245 + 12345;
-    return (unsigned int)(next / 65536) % RAND_MAX;
-}
-
-int randRocketAxis()
-{
-    int min_x = SIDE_BAR_WIDTH / 8 + 1;
-    int max_x = MAX_X / 8 - ROCKET_WIDTH / 8;
-    int x = rand(); // 1 - 88
-    while (min_x > x || x > max_x)
-    {
-        x = rand();
-    }
-    return x + 15;
-}
-
-void initRockets()
-{
-    for (int i = 0; i < MAX_ROCKETS; i++)
-    {
-        int newRocketX, newRocketY;
-        int collisionDetected;
-
-        do
-        {
-            // Generate random position for the new rocket
-            newRocketX = 8 * randRocketAxis();
-            newRocketY = 48;
-
-            // Check for collision with existing rockets based on X position only
-            collisionDetected = 0;
-            for (int j = 0; j < i; j++)
-            {
-                if (rockets[j].active &&
-                    (newRocketX >= rockets[j].x - ROCKET_WIDTH && newRocketX <= rockets[j].x + ROCKET_WIDTH)) // Check only X position
-                {
-                    collisionDetected = 1;
-                    i = 0;
-                    break;
-                }
-            }
-        } while (collisionDetected);
-
-        // Set the position of the new rocket
-        rockets[i].x = newRocketX;
-        rockets[i].y = newRocketY;
-        rockets[i].active = 1;
-    }
-}
-
-void info(struct graphics *g)
-{
-    graphics_write_string(g, 16, 8, "Welcome!");
-    graphics_write_string(g, 16, 16, "Save the World!");
-    graphics_write_string(g, 16, 24, "by Eren Karadeniz");
-    graphics_write_string(g, 16, 32, "200101070");
-
-    graphics_write_string(g, 16, 48, "Keys");
-    graphics_write_string(g, 16, 56, "A to move left");
-    graphics_write_string(g, 16, 64, "D to move right");
-    graphics_write_string(g, 16, 72, "Space to Shot");
-    graphics_write_string(g, 16, 80, "Q to quit game");
-    graphics_write_string(g, 16, 88, "R to restart game");
-    graphics_write_string(g, 16, 96, "P to pause game");
-    graphics_write_string(g, 16, 112, "Win after reach");
-    graphics_write_string(g, 16, 120, "25 Score");
 }
 
 // Function to convert an integer to its string representation
@@ -396,6 +169,24 @@ void printBulletCount(struct graphics *g, int x, int y)
         graphics_write_string(g, x + 8, y, " ");
 }
 
+void info(struct graphics *g)
+{
+    graphics_write_string(g, 16, 8, "Welcome!");
+    graphics_write_string(g, 16, 16, "Save the World!");
+    graphics_write_string(g, 16, 24, "by Eren Karadeniz");
+    graphics_write_string(g, 16, 32, "200101070");
+
+    graphics_write_string(g, 16, 48, "Keys");
+    graphics_write_string(g, 16, 56, "A to move left");
+    graphics_write_string(g, 16, 64, "D to move right");
+    graphics_write_string(g, 16, 72, "Space to Shot");
+    graphics_write_string(g, 16, 80, "Q to quit game");
+    graphics_write_string(g, 16, 88, "R to restart game");
+    graphics_write_string(g, 16, 96, "P to pause game");
+    graphics_write_string(g, 16, 112, "Win after reach");
+    graphics_write_string(g, 16, 120, "25 Score");
+}
+
 void intro(struct graphics *g)
 {
     drawBoundaries(g);
@@ -409,69 +200,55 @@ void intro(struct graphics *g)
     printScore(g, 80, 144);
 }
 
-void init(struct graphics *g)
+// Draw A
+void draw_a(struct graphics *g, int x, int y, int w, int h)
 {
-
-    clear_screen(g);
-    initBullets();
-    initRockets();
-    intro(g);
-    drawBoundaries(g);
-
-    ship_x = (MAX_X + SIDE_BAR_WIDTH) / 2 - SPACE_SHIP_WIDTH / 4; // base x of spaceship 49th pixel
-    ship_y = MAX_Y - SPACE_SHIP_HEIGHT;                           // base y of spaceship 87th pixel
+    graphics_line(g, x, y, w + 3, h + 3);
+    graphics_line(g, x, y, -w - 3, h + 3);
+    graphics_line(g, x - 10, y + 10, 0, h + 5);
+    graphics_line(g, x + 10, y + 10, 0, h + 5);
+    graphics_line(g, x - 10, y + 15, 20, 0);
 }
 
-void winGame(struct graphics *g)
+void drawSpaceship(struct graphics *g, int x, int y, int w, int h)
 {
-    clear_screen(g);
-    drawBoundaries(g);
-    info(g);
-    graphics_write_string(g, MAX_X / 2, MAX_Y / 2, "You Win!");
-    graphics_write_string(g, MAX_X / 2, MAX_Y / 2 + 8, "Press R for Play Again");
+    //  Draw A
+    draw_a(g, x, y, w, h);
+    draw_a(g, x + 70, y, w, h);
+    draw_a(g, x, y + 20, w, h);
+    draw_a(g, x + 70, y + 20, w, h);
+
+    // Draw I
+    graphics_line(g, x + 35, y, 0, h + 6);
+    // Draw -
+    graphics_line(g, x + 35 - w + 2, y, 2 * w - 3, 0);
+    graphics_line(g, x + 35 - w + 2, y + h + 6, 2 * w - 3, 0);
+
+    // Draw /
+    graphics_line(g, x + 30, y + 20, -w - 6, h + 6);
+    // Draw '\'
+    graphics_line(g, x + 40, y + 20, w + 6, h + 6);
+    // Draw -
+    graphics_line(g, x + 30, y + 22, w + 6, 0);
+
+    // Draw /
+    graphics_line(g, x + 10, y + 45, -w - 12, h + 12);
+    // Draw o
+    graphics_circle(g, x + 20, y + 45, w + 2);
+    graphics_circle(g, x + 35, y + 45, w + 2);
+    graphics_circle(g, x + 50, y + 45, w + 2);
+    // Draw '\'
+    graphics_line(g, x + 60, y + 45, w + 12, h + 12);
 }
 
-int continueGame(struct graphics *g)
+void clearSpaceship(struct graphics *g, int x, int y, int w, int h)
 {
-    // Check if all rockets have reached the bottom of the screen
+    // Calculate bottom-right corner coordinates
+    int x2 = x + 96;
+    int y2 = y + 56; // Maximum y-coordinate for the spaceship
 
-    int rocketReachedBottom = 0;
-    for (int i = 0; i < MAX_ROCKETS; i++)
-    {
-        if (rockets[i].y + ROCKET_HEIGHT >= MAX_Y)
-        {
-            rocketReachedBottom = 1;
-            if (rocketReachedBottom)
-            {
-                quit_flag = 1;
-                graphics_write_string(g, MAX_X / 2, MAX_Y / 2, "Rockets Reached Bottom.");
-                gameOver(g);
-                return 0;
-            }
-        }
-    }
-
-    if (score == 25)
-    {
-        quit_flag = 1;
-        winGame(g);
-        score = 0;
-        return 0;
-    }
-
-    return 1;
-}
-
-void busy_wait(unsigned int milliseconds)
-{
-    // Calculate the number of iterations needed for the desired milliseconds
-    unsigned int iterations = milliseconds * 10000; // Adjust this value as needed based on your system's clock speed
-
-    // Execute an empty loop for the specified number of iterations
-    for (unsigned int i = 0; i < iterations; ++i)
-    {
-        // Do nothing, just wait
-    }
+    // Clear the rectangle covering the spaceship
+    graphics_clear(g, x - 10, y, x2 - x, y2 - y);
 }
 
 void moveBullet(struct graphics *g, int index)
@@ -511,6 +288,14 @@ void move_bullets(struct graphics *g)
         bulletMoveCounter = 0;
 }
 
+void shot_bullet(Bullet *bullet)
+{
+    bullet->active = 1;
+    bullet->avaible = 0;
+    bullet->x = ship_x + 32; // Adjust bullet position to appear from spaceship's center
+    bullet->y = ship_y - 16;
+}
+
 void drawRocket(struct graphics *g, int x, int y)
 {
 
@@ -542,14 +327,36 @@ void clearRocket(struct graphics *g, int x, int y)
     // Clear the rectangle covering the spaceship
     graphics_clear(g, x, y - 40, x2 - x, y2 - y);
 }
-void moveRocket(struct graphics *g, int index)
+
+unsigned int get_system_timer_value()
 {
-    if (rocketMoveCounter % ROCKET_MOVE_DELAY == 0)
-    {                                                       // Move the rocket every ROCKET_MOVE_DELAY frames
-        clearRocket(g, rockets[index].x, rockets[index].y); // Clear previous rocket position
-        rockets[index].y += ROCKET_SPEED;                   // Move the rocket downwards
-        drawRocket(g, rockets[index].x, rockets[index].y);
+    unsigned int val;
+    // Read the value of the system timer (assuming x86 architecture)
+    asm volatile("rdtsc" : "=a"(val));
+    return val;
+}
+
+// Define some global variables for the random number generator
+static unsigned long next;
+
+// A function to generate a pseudo-random integer
+int rand(void)
+{
+    next = get_system_timer_value();
+    next = next * 1103515245 + 12345;
+    return (unsigned int)(next / 65536) % RAND_MAX;
+}
+
+int randRocketAxis()
+{
+    int min_x = SIDE_BAR_WIDTH / 8 + 1;
+    int max_x = MAX_X / 8 - ROCKET_WIDTH / 8;
+    int x = rand(); // 1 - 88
+    while (min_x > x || x > max_x)
+    {
+        x = rand();
     }
+    return x + 8;
 }
 
 // Function to generate a single rocket from passive rocket
@@ -594,6 +401,17 @@ void generate_rockets()
         }
     }
 }
+
+void moveRocket(struct graphics *g, int index)
+{
+    if (rocketMoveCounter % ROCKET_MOVE_DELAY == 0)
+    {                                                       // Move the rocket every ROCKET_MOVE_DELAY frames
+        clearRocket(g, rockets[index].x, rockets[index].y); // Clear previous rocket position
+        rockets[index].y += ROCKET_SPEED;                   // Move the rocket downwards
+        drawRocket(g, rockets[index].x, rockets[index].y);
+    }
+}
+
 void move_rockets(struct graphics *g)
 {
     // Draw and move the rocket
@@ -617,6 +435,51 @@ void move_rockets(struct graphics *g)
     if (current_key != 'p')
     {
         generate_rockets();
+    }
+}
+
+void initBullets()
+{
+    for (int i = 0; i < MAX_BULLETS; i++)
+    {
+        bullets[i].x = 1;
+        bullets[i].y = 1;
+        bullets[i].active = 0;
+        bullets[i].avaible = 1;
+    }
+}
+
+void initRockets()
+{
+    for (int i = 0; i < MAX_ROCKETS; i++)
+    {
+        int newRocketX, newRocketY;
+        int collisionDetected;
+
+        do
+        {
+            // Generate random position for the new rocket
+            newRocketX = 8 * randRocketAxis();
+            newRocketY = 48;
+
+            // Check for collision with existing rockets based on X position only
+            collisionDetected = 0;
+            for (int j = 0; j < i; j++)
+            {
+                if (rockets[j].active &&
+                    (newRocketX >= rockets[j].x - ROCKET_WIDTH && newRocketX <= rockets[j].x + ROCKET_WIDTH)) // Check only X position
+                {
+                    collisionDetected = 1;
+                    i = 0;
+                    break;
+                }
+            }
+        } while (collisionDetected);
+
+        // Set the position of the new rocket
+        rockets[i].x = newRocketX;
+        rockets[i].y = newRocketY;
+        rockets[i].active = 1;
     }
 }
 
@@ -672,6 +535,147 @@ void collisionSpaceShip(struct graphics *g)
     }
 }
 
+void init(struct graphics *g)
+{
+
+    clear_screen(g);
+    initBullets();
+    initRockets();
+    intro(g);
+    drawBoundaries(g);
+
+    ship_x = (MAX_X + SIDE_BAR_WIDTH) / 2 - SPACE_SHIP_WIDTH / 4; // base x of spaceship 49th pixel
+    ship_y = MAX_Y - SPACE_SHIP_HEIGHT;                           // base y of spaceship 87th pixel
+}
+
+void quitGame(struct graphics *g)
+{
+    clear_screen(g);
+    drawBoundaries(g);
+    info(g);
+    graphics_write_string(g, MAX_X / 2, MAX_Y / 2, "Press R for Play Again");
+}
+
+void restartGame(struct graphics *g)
+{
+    init(g); // Initialize the game
+}
+
+void handleUserInput(struct graphics *g, char current_key, Bullet bullets[MAX_BULLETS])
+{
+    if (!pause_flag)
+    {
+        switch (current_key)
+        {
+        case 'a':
+            if (ship_x - 1 > SIDE_BAR_WIDTH + 20)
+            {
+                clearSpaceship(g, ship_x, ship_y, 4, 4);
+                ship_x -= 8;
+            }
+            break;
+        case 'd':
+            if (ship_x + SPACE_SHIP_WIDTH < MAX_X - 16)
+            {
+                clearSpaceship(g, ship_x, ship_y, 4, 4);
+                ship_x += 8;
+            }
+            break;
+        case ' ':
+            for (int i = 0; i < MAX_BULLETS; i++)
+            {
+                if (!bullets[i].active && bullets[i].avaible)
+                {
+                    shot_bullet(&bullets[i]);
+                    bullet_counter();
+                    printBulletCount(g, 88, 136);
+                    break;
+                }
+            }
+            break;
+        case 'q':
+            score = 0;
+            quitGame(g);
+            quit_flag = 1;
+            graphics_delete(g);
+            break;
+        case 'r':
+            score = 0;
+            quit_flag = 0;
+            bullet_count = MAX_BULLETS;
+            restartGame(g); // Restart the game
+            break;
+        case 'p':
+            pause_flag = !pause_flag; // Toggle pause_flag
+            if (pause_flag)
+            {
+                graphics_write_string(g, MAX_X / 2, MAX_Y / 2, "Paused, Press p to continue");
+            }
+            break;
+        }
+    }
+    else
+    {
+        if (current_key == 'p')
+        {
+            pause_flag = 0;
+            graphics_write_string(g, MAX_X / 2, MAX_Y / 2, "                           ");
+        }
+    }
+}
+
+void winGame(struct graphics *g)
+{
+    clear_screen(g);
+    drawBoundaries(g);
+    info(g);
+    graphics_write_string(g, MAX_X / 2, MAX_Y / 2, "You Win!");
+    graphics_write_string(g, MAX_X / 2, MAX_Y / 2 + 8, "Press R for Play Again");
+}
+
+int continueGame(struct graphics *g)
+{
+    // Check if all rockets have reached the bottom of the screen
+
+    int rocketReachedBottom = 0;
+    for (int i = 0; i < MAX_ROCKETS; i++)
+    {
+        if (rockets[i].y + ROCKET_HEIGHT >= MAX_Y)
+        {
+            rocketReachedBottom = 1;
+            if (rocketReachedBottom)
+            {
+                quit_flag = 1;
+                graphics_write_string(g, MAX_X / 2, MAX_Y / 2, "Rockets Reached Bottom.");
+                gameOver(g);
+                return 0;
+            }
+        }
+    }
+
+    if (score == 25)
+    {
+        quit_flag = 1;
+        winGame(g);
+        score = 0;
+        return 0;
+    }
+
+    return 1;
+}
+
+void busy_wait(unsigned int milliseconds)
+{
+    // Calculate the number of iterations needed for the desired milliseconds
+    unsigned int iterations = milliseconds * 10000; // Adjust this value as needed based on your system's clock speed
+
+    // Execute an empty loop for the specified number of iterations
+    for (unsigned int i = 0; i < iterations; ++i)
+    {
+        // Do nothing, just wait
+    }
+}
+
 int kernel_main()
 {
 
@@ -710,7 +714,7 @@ int kernel_main()
             collisionBullet(g);
             collisionSpaceShip(g);
 
-            busy_wait(300); // Wait for 50 milliseconds using busy wait
+            busy_wait(800); // Wait for 50 milliseconds using busy wait
         }
         current_key = keyboard_read(1); // non blocking
         if (current_key == 'r')
