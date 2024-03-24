@@ -79,20 +79,11 @@ void clear_screen(struct graphics *g)
 void drawBoundaries(struct graphics *g)
 {
 
-    // Draw vertical boundaries
-    for (int i = 0; i < MAX_Y; i += 8)
-    {
-        graphics_char(g, 0, i, '#');              // Left Boundary
-        graphics_char(g, SIDE_BAR_WIDTH, i, '#'); // Right boundary
-        graphics_char(g, MAX_X - 8, i, '#');      // Right-most boundary
-    }
-
-    // Draw horizontal boundaries
-    for (int i = 0; i < MAX_X; i += 8)
-    {
-        graphics_char(g, i, 0, '#');         // Top boundary
-        graphics_char(g, i, MAX_Y - 8, '#'); // Bottom boundary
-    }
+    graphics_rect(g,0,0,MAX_X,8);
+    graphics_rect(g,0,MAX_Y-8,MAX_X,8);
+    graphics_rect(g,0,0,8,MAX_Y-8);
+    graphics_rect(g,SIDE_BAR_WIDTH,0,8,MAX_Y-8);
+    graphics_rect(g,MAX_X-8,0,8,MAX_Y);
 }
 
 // Function to convert an integer to its string representation
