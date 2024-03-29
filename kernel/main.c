@@ -89,7 +89,7 @@ char score_str[3];   // maximum number of digits is 3
 char bullets_str[2]; // maximum number of digits is 2
 
 //Clears all screen
-void clear_screen(struct graphics *g)
+void clearScreen(struct graphics *g)
 {
     graphics_clear(g, 0, 0, MAX_X, MAX_Y);
 }
@@ -105,8 +105,8 @@ void drawBoundaries(struct graphics *g)
     graphics_rect(g,MAX_X-8,0,8,MAX_Y);
 }
 
-// Function to convert an integer to its string representation
-int int_to_string(int num, char *buffer)
+//Convert an integer to its string representation
+int intToString(int num, char *buffer)
 {
     int i = 0;
     int digits = 0; // Variable to store the number of digits
@@ -154,12 +154,12 @@ int int_to_string(int num, char *buffer)
 //Print Score on Screen
 void printScore(struct graphics *g, int x, int y)
 {
-    int num_digits = int_to_string(score, score_str);
+    int num_digits = intToString(score, score_str);
     graphics_write_string(g, x, y, score_str);
 }
 
 //Count how many bullet left
-void bullet_counter()
+void bulletCounter()
 {
     bullet_count = 0;
     for (int i = 0; i < MAX_BULLETS; i++)
@@ -175,7 +175,7 @@ void bullet_counter()
 void printBulletCount(struct graphics *g, int x, int y)
 {
 
-    int num_digits = int_to_string(bullet_count, bullets_str);
+    int num_digits = intToString(bullet_count, bullets_str);
     graphics_write_string(g, x, y, bullets_str);
     // kprint_at(x, y, bullets_str);
     if (bullet_count < 10)
@@ -217,7 +217,7 @@ void intro(struct graphics *g)
 }
 
 // Draw A shape for spaceship Draw
-void draw_a(struct graphics *g, int x, int y, int w, int h)
+void drawA(struct graphics *g, int x, int y, int w, int h)
 {
     graphics_line(g, x, y, w + 3, h + 3);
     graphics_line(g, x, y, -w - 3, h + 3);
@@ -230,10 +230,10 @@ void draw_a(struct graphics *g, int x, int y, int w, int h)
 void drawSpaceship(struct graphics *g, int x, int y, int w, int h)
 {
     //  Draw A
-    draw_a(g, x, y, w, h);
-    draw_a(g, x + 70, y, w, h);
-    draw_a(g, x, y + 20, w, h);
-    draw_a(g, x + 70, y + 20, w, h);
+    drawA(g, x, y, w, h);
+    drawA(g, x + 70, y, w, h);
+    drawA(g, x, y + 20, w, h);
+    drawA(g, x + 70, y + 20, w, h);
 
     // Draw I
     graphics_line(g, x + 35, y, 0, h + 6);
@@ -286,7 +286,7 @@ void moveBullet(struct graphics *g, int index)
 }
 
 //Control movement of all bullets
-void move_bullets(struct graphics *g)
+void moveBullets(struct graphics *g)
 {
 
     // Move all active bullets
@@ -308,7 +308,7 @@ void move_bullets(struct graphics *g)
         bulletMoveCounter = 0;
 }
 
-void shot_bullet(Bullet *bullet)
+void shotBullet(Bullet *bullet)
 {
     bullet->active = 1;
     bullet->avaible = 0;
@@ -339,7 +339,7 @@ void drawRocket(struct graphics *g, int x, int y)
     graphics_line(g, x + 30, y + 15, -15, 15);
 }
 
-//ClearRocket
+//Clear Rocket
 void clearRocket(struct graphics *g, int x, int y)
 {
     // Calculate bottom-right corner coordinates
@@ -351,7 +351,7 @@ void clearRocket(struct graphics *g, int x, int y)
 }
 
 //Get System Timer for random
-unsigned int get_system_timer_value()
+unsigned int getSystemTimerValue()
 {
     unsigned int val;
     // Read the value of the system timer (assuming x86 architecture)
@@ -359,13 +359,13 @@ unsigned int get_system_timer_value()
     return val;
 }
 
-// Define some global variables for the random number generator
+//Define some global variables for the random number generator
 static unsigned long next;
 
 //Generate a pseudo-random integer
 int rand(void)
 {
-    next = get_system_timer_value();
+    next = getSystemTimerValue();
     next = next * 1103515245 + 12345;
     return (unsigned int)(next / 65536) % RAND_MAX;
 }
@@ -414,7 +414,7 @@ void generateRocket(Rocket *rocket)
 }
 
 //Generate Rockets
-void generate_rockets()
+void generateRockets()
 {
     // Generate new rockets if there are inactive rockets
     for (int i = 0; i < MAX_ROCKETS; i++)
@@ -437,8 +437,8 @@ void moveRocket(struct graphics *g, int index)
     }
 }
 
-//Control movement of single rocket
-void move_rockets(struct graphics *g)
+//Control movement of rockets
+void moveRockets(struct graphics *g)
 {
     // Draw and move the rocket
     for (int i = 0; i < MAX_ROCKETS; i++)
@@ -460,7 +460,7 @@ void move_rockets(struct graphics *g)
         rocketMoveCounter = 0;
     if (current_key != 'p')
     {
-        generate_rockets();
+        generateRockets();
     }
 }
 
@@ -541,7 +541,7 @@ int collisionBullet(struct graphics *g)
 //Game Over when player loses
 void gameOver(struct graphics *g)
 {
-    clear_screen(g);
+    clearScreen(g);
     drawBoundaries(g);
     info(g);
     graphics_write_string(g, MAX_X / 2, MAX_Y / 2 + 8, "You lost, Press R for Play Again");
@@ -569,7 +569,7 @@ void collisionSpaceShip(struct graphics *g)
 void init(struct graphics *g)
 {
 
-    clear_screen(g);
+    clearScreen(g);
     initBullets();
     initRockets();
     intro(g);
@@ -582,7 +582,7 @@ void init(struct graphics *g)
 //Quit game when pressed quit
 void quitGame(struct graphics *g)
 {
-    clear_screen(g);
+    clearScreen(g);
     drawBoundaries(g);
     info(g);
     graphics_write_string(g, MAX_X / 2, MAX_Y / 2, "Press R for Play Again");
@@ -620,8 +620,8 @@ void handleUserInput(struct graphics *g, char current_key, Bullet bullets[MAX_BU
             {
                 if (!bullets[i].active && bullets[i].avaible)
                 {
-                    shot_bullet(&bullets[i]);
-                    bullet_counter();
+                    shotBullet(&bullets[i]);
+                    bulletCounter();
                     printBulletCount(g, 88, 136);
                     break;
                 }
@@ -661,7 +661,7 @@ void handleUserInput(struct graphics *g, char current_key, Bullet bullets[MAX_BU
 //Win condition
 void winGame(struct graphics *g)
 {
-    clear_screen(g);
+    clearScreen(g);
     drawBoundaries(g);
     info(g);
     graphics_write_string(g, MAX_X / 2, MAX_Y / 2, "You Win!");
@@ -700,8 +700,8 @@ int continueGame(struct graphics *g)
     return 1;
 }
 
-// Define a function to sleep
-void busy_wait(unsigned int milliseconds)
+// Define sleep
+void sleep(unsigned int milliseconds)
 {
     // Calculate the number of iterations needed for the desired milliseconds
     unsigned int iterations = milliseconds * 10000; // Adjust this value as needed based on your system's clock speed
@@ -746,13 +746,13 @@ int kernel_main()
             }
             drawSpaceship(g, ship_x, ship_y, 4, 4);
 
-            move_bullets(g);
-            move_rockets(g);
+            moveBullets(g);
+            moveRockets(g);
             //  Check for collision between bullets and rockets
             collisionBullet(g);
             collisionSpaceShip(g);
 
-            busy_wait(800); // Wait for 50 milliseconds using busy wait
+            sleep(800); // Wait for 50 milliseconds using busy wait
         }
         current_key = keyboard_read(1); // non blocking
         if (current_key == 'r')
